@@ -1,7 +1,9 @@
 # ignore node dependency directories
-tmp_file/
+application/tmp_file/
 
 # ignore log files and databases
 *.log
 *.sql
 *.sqlite
+
+application/configuration/server.inc.php
