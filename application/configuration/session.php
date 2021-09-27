@@ -1,9 +1,9 @@
 <?php 
-if(!isset($_SESSION['bnc_id'])){
-    header('Location: ../login.php');
+if(!isset($_SESSION['rmis_uid'])){
+    header('Location: '.RMIS_DOMAIN );
 }
 
-if($_SESSION['bnc_id'] != session_id()){
-    header('Location: ../login.php');
+if($_SESSION['rmis_id'] != session_id()){
+    header('Location: '.RMIS_DOMAIN );
 }
 ?>
