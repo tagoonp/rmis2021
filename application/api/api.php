@@ -45,7 +45,7 @@ if($stage == 'get_reviewer_list'){
         $return['error_message'] = 'Error x1001';
     }
     
-    echo json_encode($return | JSON_PRETTY_PRINT);
+    echo json_encode($return , JSON_PRETTY_PRINT);
     mysqli_close($conn);
     die();
     
