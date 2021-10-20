@@ -12,6 +12,8 @@ error_reporting(E_ALL);
 $db = new Database();
 $conn = $db->conn();
 
+// https://rmis2.medicine.psu.ac.th/rmis2021/application/api/api.php?stage=get_reviewer_list&api_key=$utodj@Xkdo%pskaXXor547Sx
+
 if(!isset($_REQUEST['stage'])){
   mysqli_close($conn);
   die();
