@@ -32,7 +32,7 @@ if($stage == 'get_reviewer_list'){
 
     $api_key = mysqli_real_escape_string($conn, $_REQUEST['api_key']);
 
-    $strSQL = "SELECT * FROM useraccount a INNER JOIN userinfo b ON a.id = b.user_id
+    $strSQL = "SELECT id_pm, username, usertype,prefix_th, prefix_en, fname, lname,fname_en, lname_en, dept_name, dept_name_en, email,  FROM useraccount a INNER JOIN userinfo b ON a.id = b.user_id
                 LEFT JOIN dept c ON b.id_dept = c.id_dept
                WHERE a.reviewer_role = '1'
                AND a.delete_status = '0'
