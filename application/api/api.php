@@ -2,7 +2,6 @@
 require('../configuration/server.inc.php');
 require('../configuration/configuration.php');
 require('../configuration/database.php'); 
-require('../configuration/session.php'); 
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
