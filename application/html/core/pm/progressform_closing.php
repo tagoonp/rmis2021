@@ -14,12 +14,44 @@ if((!isset($_REQUEST['project_id'])) || ($_REQUEST['project_id'] == '')){
 }
 
 $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
+$psid = mysqli_real_escape_string($conn, $_REQUEST['psid']);
+
+$strSQL = "SELECT * FROM rec_progress WHERE rp_id_rs = '$project_id' AND rp_session = '$psid' AND rp_uid = '".$_SESSION['rmis_uid']."' AND rp_sending_status = '1'";
+$res = $db->fetch($strSQL, false);
+if($res){
+    if(($res['rp_progress_status'] == '2') || ($res['rp_progress_status'] == '20')){
+
+    }else{
+        $db->close();
+        header('Location: progressform_closing_view?project_id='.$project_id.'&psid='.$psid);
+        die();
+    }
+}
+
+$strSQL = "SELECT * FROM rec_progress_closing WHERE rpx_session = '$psid' LIMIT 1";
+$resProgress = $db->fetch($strSQL, false);
+$pgStatus = false;
+if($resProgress){
+    $pgStatus = true;
+}
+
+$strSQL = "SELECT *, DATE(a.rp_sending_datetime) send_date FROM rec_progress a INNER JOIN research b ON a.rp_id_rs = b.id_rs
+           INNER JOIN type_status_research c ON a.rp_progress_status = c.id_status_research
+           INNER JOIN rec_progress_closing d ON a.rp_session = d.rpx_session
+           WHERE 
+           a.rp_sending_status = '1' AND a.rp_confirm_1 = '0' AND a.rp_delete_status = '0' AND a.rp_progress_id = 'closing' AND a.rp_session = '$psid' AND a.rp_id_rs = '$project_id'";
+$resProgress = $db->fetch($strSQL, false);
+$pgStatus = false;
+if($resProgress){
+    $pgStatus = true;
+}
 ?>
 
 <input type="hidden" id="txtSid" value="<?php echo $_SESSION['rmis_id'];?>">
 <input type="hidden" id="txtUid" value="<?php echo $_SESSION['rmis_uid'];?>">
 <input type="hidden" id="txtRole" value="<?php echo $_SESSION['rmis_role'];?>">
 <input type="hidden" id="txtPid" value="<?php echo $project_id;?>">
+<input type="hidden" id="txtSessionID" value="<?php echo $psid;?>">
 
 <!DOCTYPE html>
 <html class="loading" lang="en" data-textdirection="ltr">
@@ -186,7 +218,7 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                         <div class="breadcrumb-wrapper d-none d-sm-block">
                             <ol class="breadcrumb p-0 mb-0 pl-1">
                                 <li class="breadcrumb-item"><a href="./"><i class="bx bx-home-alt"></i></a></li>
-                                <li class="breadcrumb-item"><a href="Javascript:window.location.history.back()">รายงานโครงการวิจัย</a></li>
+                                <li class="breadcrumb-item"><a href="Javascript:window.location.history.back()">รายงานโครงการวิจัย <span class="apducode"></span></a></li>
                                 <li class="breadcrumb-item"><a href="#">Closing</a></li>
                                 </li>
                             </ol>
@@ -206,10 +238,107 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                 <section id="card-navigation">
                     <div class="row">
                         <div class="col-md-12">
+
+                        <h4 class="py-50 text-dark">ข้อมูลโครงการวิจัย</h4>
+                            <div class="card">
+                                <div class="card-body p-0">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <table class="table table-striped mb-0" style="font-size: 0.8em;">
+                                                <tbody>
+                                                    <tr>
+                                                        <td style="width: 50%;"><div>หมายเลขโครงการ : </div><span class="badge badge-success round" style="font-size: 1.3em; margin-top: 3px;"><?php echo $resProgress['code_apdu']; ?></span></td>
+                                                        <td><div>Protocol No. : </div><span class="" style="font-size: 1.3em; margin-top: 3px;"><?php if($resProgress['protocol_no'] == ''){ echo "-"; }else{  echo $resProgress['protocol_no']; } ?></span></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="2"><div>ชื่อโครงการ : </div><div class="text-dark" style="font-size: 1.3em; margin-top: 3px;"><?php if($resProgress['title_th'] == '-'){ echo $resProgress['title_en']; }else{ echo $resProgress['title_th']. " (".$resProgress['title_en'].")";} ?></div></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td colspan="2">
+                                                        <div>หัวหน้าโครงการ : </div>
+                                                        <div class="text-dark" style="font-size: 1.3em; margin-top: 3px;">
+                                                            <?php 
+                                                            $strSQL = "SELECT * FROM userinfo a 
+                                                                       LEFT JOIN dept b ON a.id_dept = b.id_dept 
+                                                                       INNER JOIN useraccount c ON a.user_id = c.id
+                                                                       WHERE a.user_id = '".$resProgress['rp_uid']."' ORDER BY a.id_p DESC LIMIT 1";
+                                                            $resPI = $db->fetch($strSQL, false);
+                                                            if($resPI){
+                                                                ?>
+                                                                <h6 style="font-size: 1.1em;" class="th text-dark"><?php echo $resPI['prefix_th'].$resPI['fname']." ".$resPI['lname']."<br>"; ?></h6>
+                                                                <?php
+                                                                if($resPI['id_dept'] == '19'){
+                                                                    echo "สังกัด :".$resPI['dept'];
+                                                                }else{
+                                                                    echo "สังกัด :".$resPI['dept_name'];
+                                                                }
+                                                                echo "<br>โทรศัพท์ : ".$resPI['tel_mobile']."<br>E-mail address : ".$resPI['email'];
+                                                            }else{
+                                                                echo "NA";
+                                                            }
+                                                            ?>
+                                                        </div>
+                                                    </td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td colspan="2"><div>Funding source <span class="text-muted">(ถ้ามี)</span> : </div><div class="text-dark" style="font-size: 1.3em; margin-top: 3px;"><?php echo $resProgress['source_funds'] ?></div></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td style="width: 50%;">
+                                                            <div>วันที่ได้รับใบรับรองจาก EC : </div>
+                                                            <div style="font-size: 1.3em; margin-top: 3px;" class="text-danger">
+                                                            <?php 
+
+                                                            $strSQL = "SELECT * FROM rec_progress WHERE rp_progress_id = 'progress' AND rp_delete_status = '0' AND rp_confirm_1 = '1' ORDER BY rp_id DESC LIMIT 1";
+                                                            $resRec = $db->fetch($strSQL, false);
+                                                            if($resRec){
+                                                                echo $resRec['rp_app_date'];
+                                                            }else{
+                                                                $strSQL = "SELECT * FROM research_consider_type WHERE rct_id_rs = '$project_id' AND rct_status = '1' ORDER BY rct_id DESC LIMIT 1";
+                                                                $resType = $db->fetch($strSQL, false);
+                                                                if($resType){
+                                                                    if($resType['rct_type'] == 'Exempt'){
+                                                                        $strSQL = "SELECT DATE(rai_sign_date) app_date FROM research_acknowledge_info WHERE rai_id_rs = '$project_id' AND rai_sign_status = '1' ORDER BY rai_id DESC LIMIT 1";
+                                                                        $resSign= $db->fetch($strSQL, false);
+                                                                        if($resSign){
+                                                                            echo $resSign['app_date'];
+                                                                        }else{
+                                                                            echo "NA";
+                                                                        }
+                                                                    }else{
+                                                                        $strSQL = "SELECT DATE(rai_sign_date) app_date FROM research_expedited_info WHERE rai_id_rs = '$project_id' AND rai_sign_status = '1' ORDER BY rai_id DESC LIMIT 1";
+                                                                        $resSign= $db->fetch($strSQL, false);
+                                                                        if($resSign){
+                                                                            echo $resSign['app_date'];
+                                                                        }else{
+                                                                            echo "NA";
+                                                                        }
+                                                                    }
+                                                                }else{
+                                                                    echo "NA";
+                                                                }
+                                                            }
+
+                                                            
+                                                            ?>
+                                                            </div>
+                                                        </td>
+                                                        <td><div>วันที่ส่งรายงาน : </div><span class="" style="font-size: 1.3em; margin-top: 3px;"><?php echo $resProgress['send_date']; ?></span></td>
+                                                    </tr>
+
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="card">
                                 <div class="card-body  mt-2">
                                     <form action="#" >
-                                    <fieldset>
+                                        <fieldset>
                                             <div class="row">
                                                 <div class="col-12">
                                                     <h4 class="py-50 text-dark">สรุปจำนวนอาสาสมัคร</h4>
@@ -217,30 +346,33 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                 <div class="col-sm-6">
                                                     <div class="mb-1">
                                                         <fieldset>
+                                                            <div class="radio dn">
+                                                                <input type="radio" class="checkbox-input" id="radio_0" name="radio_1" value="na" checked>>
+                                                            </div>
                                                             <div class="radio">
-                                                                <input type="radio" class="checkbox-input" id="radio_1" name="radio_1" value="1">
-                                                                <label for="radio_1" class="text-dark">1. โครงการไม่เกี่ยวกับอาสาสมัคร (เช่น Retrospective ไม่มีข้อมูลระบุตัวตน)</label>
+                                                                <input type="radio" class="checkbox-input" id="radio_1" name="radio_1" value="1" <?php if(($pgStatus) && ($resProgress['rp5_qs1'] == '1')){ echo "checked"; }?>>
+                                                                <label for="radio_1" class="text-dark">1. โครงการไม่เกี่ยวกับอาสาสมัคร (เช่น Retrospective ไม่มีข้อมูลระบุตัวตน) ข้ามไปข้อ 4</label>
                                                             </div>
                                                         </fieldset>
-                                                        <div class="pt-1 mb-2 dn" id="hd1">
-                                                            <textarea name="txtQ1" id="txtQ1" cols="30" rows="4" placeholder="ระบุหมายเหตุ" class="form-control"></textarea>
+                                                        <div class="pt-1 mb-2 <?php if(($pgStatus) && ($resProgress['rp5_qs1'] == '1')){}else{ echo "dn"; }?>" id="hd1">
+                                                            <textarea name="txtQ1" id="txtQ1" cols="30" rows="4" placeholder="ระบุหมายเหตุ" class="form-control"><?php if(($pgStatus) && ($resProgress['rp5_qs1'] == '1')){ echo $resProgress['rp5_qs1_remak']; } ?></textarea>
                                                         </div>
                                                     </div>
 
                                                     <div>
                                                         <fieldset>
                                                             <div class="radio">
-                                                                <input type="radio" class="checkbox-input" id="radio_2" name="radio_1" value="2">
-                                                                <label for="radio_2" class="text-dark">2. โครงการเกี่ยวข้องกับการมีอาสาสมัคร <span class="text-danger">(กรอกตัวเลขทุกช่อง ถ้าไม่มีให้ใส่เลข 0)</span></label>
+                                                                <input type="radio" class="checkbox-input" id="radio_2" name="radio_1" value="2" <?php if(($pgStatus) && ($resProgress['rp5_qs1'] == '2')){ echo "checked"; }?>>
+                                                                <label for="radio_2" class="text-dark">2. โครงการเกี่ยวข้องกับการมีอาสาสมัคร <span class="text-danger">&nbsp;(กรอกตัวเลขทุกช่อง ถ้าไม่มีให้ใส่เลข 0)</span></label>
                                                             </div>
                                                         </fieldset>
-                                                        <div class="pt-1 mb-2 dn" id="hd2">
+                                                        <div class="pt-1 mb-2 pl-2 <?php if(($pgStatus) && ($resProgress['rp5_qs1'] == '2')){}else{ echo "dn"; }?> " id="hd2">
                                                             <div class="form-group row align-items-center">
                                                                 <div class="col-lg-7 col-6">
                                                                     <label for="first-name" class="col-form-label text-dark" style="font-size: 1em;">- จำนวนอาสาสมัครที่ EC รับรอง : <span class="text-danger">*</span></label>
                                                                 </div>
                                                                 <div class="col-lg-5 col-6">
-                                                                    <input type="number" class="form-control" name="txtQ2_1" id="txtQ2_1" placeholder="" min="0" />
+                                                                    <input type="number" class="form-control" name="txtQ2_1" id="txtQ2_1" min="0" value="<?php if($pgStatus){ echo $resProgress['rp5_qs2_1']; } ?>" />
                                                                 </div>
                                                             </div>
 
@@ -249,7 +381,7 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                                     <label for="first-name" class="col-form-label text-dark" style="font-size: 1em;">- จำนวนที่เซ็นยินยอม : <span class="text-danger">*</span></label>
                                                                 </div>
                                                                 <div class="col-lg-5 col-6">
-                                                                    <input type="number" class="form-control" name="txtQ2_2" id="txtQ2_2" placeholder="" min="0" />
+                                                                    <input type="number" class="form-control" name="txtQ2_2" id="txtQ2_2"  min="0"  value="<?php if($pgStatus){ echo $resProgress['rp5_qs2_2']; } ?>" />
                                                                 </div>
                                                             </div>
 
@@ -258,7 +390,7 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                                     <label for="first-name" class="col-form-label text-dark" style="font-size: 1em;">- จำนวนที่ไม่ผ่านคัดกรอง : <span class="text-danger">*</span></label>
                                                                 </div>
                                                                 <div class="col-lg-5 col-6">
-                                                                    <input type="number"  class="form-control" name="txtQ2_3" id="txtQ2_3" placeholder="" min="0" />
+                                                                    <input type="number"  class="form-control" name="txtQ2_3" id="txtQ2_3" min="0"  value="<?php if($pgStatus){ echo $resProgress['rp5_qs2_3']; } ?>" />
                                                                 </div>
                                                             </div>
 
@@ -267,7 +399,7 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                                     <label for="first-name" class="col-form-label text-dark" style="font-size: 1em;">- จำนวนที่ถอนตัว : <span class="text-danger">*</span></label>
                                                                 </div>
                                                                 <div class="col-lg-5 col-6">
-                                                                    <input type="number"  class="form-control" name="txtQ2_4" id="txtQ2_4" placeholder="" min="0" />
+                                                                    <input type="number"  class="form-control" name="txtQ2_4" id="txtQ2_4" min="0"  value="<?php if($pgStatus){ echo $resProgress['rp5_qs2_4']; } ?>" />
                                                                 </div>
                                                             </div>
 
@@ -276,7 +408,7 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                                     <label for="first-name" class="col-form-label text-dark" style="font-size: 1em;">- จำนวนที่เสียชีวิต : <span class="text-danger">*</span></label>
                                                                 </div>
                                                                 <div class="col-lg-5 col-6">
-                                                                    <input type="number"  class="form-control" name="txtQ2_5" id="txtQ2_5" placeholder="" min="0" />
+                                                                    <input type="number"  class="form-control" name="txtQ2_5" id="txtQ2_5" min="0"  value="<?php if($pgStatus){ echo $resProgress['rp5_qs2_5']; } ?>"/>
                                                                 </div>
                                                             </div>
 
@@ -285,7 +417,7 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                                     <label for="first-name" class="col-form-label text-dark" style="font-size: 1em;">- จำนวนที่อยู่จนสิ้นสุดการศึกษา : <span class="text-danger">*</span></label>
                                                                 </div>
                                                                 <div class="col-lg-5 col-6">
-                                                                    <input type="number"  class="form-control" name="txtQ2_6" id="txtQ2_6" placeholder="" min="0" />
+                                                                    <input type="number"  class="form-control" name="txtQ2_6" id="txtQ2_6" min="0"  value="<?php if($pgStatus){ echo $resProgress['rp5_qs2_6']; } ?>" />
                                                                 </div>
                                                             </div>
 
@@ -296,13 +428,13 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                 <div class="col-sm-6">
                                                     <div>
                                                         <span class="text-dark" style="font-size: 1.05em;">3. จำนวนอาสาสมัครที่เกิด <span class="text-danger">Serious adverse event (ถ้าไม่มีให้ใส่เลข 0)</span></span>
-                                                        <div class="pt-1 mb-2">
+                                                        <div class="pt-1 mb-2 pl-2">
                                                             <div class="form-group row align-items-center">
                                                                 <div class="col-lg-7 col-6">
                                                                     <label for="first-name" class="col-form-label text-dark" style="font-size: 1em;">- อาสาสมัครในสถานวิจัย : <span class="text-danger">*</span></label>
                                                                 </div>
                                                                 <div class="col-lg-5 col-6">
-                                                                    <input type="number" id="txtQ3_1" class="form-control" name="txtQ3_1" placeholder="" min="0" />
+                                                                    <input type="number" id="txtQ3_1" class="form-control" name="txtQ3_1" placeholder="" min="0" value="<?php if($pgStatus){ echo $resProgress['rp5_qs3_1']; } ?>"  />
                                                                 </div>
                                                             </div>
 
@@ -311,16 +443,16 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                                     <label for="first-name" class="col-form-label text-dark" style="font-size: 1em;">- อาสาสมัครในประเทศ : <span class="text-muted">* ถ้ามี SUSAR</span></label>
                                                                 </div>
                                                                 <div class="col-lg-5 col-6">
-                                                                    <input type="number" id="txtQ3_2" class="form-control" name="txtQ3_2" placeholder="" min="0" />
+                                                                    <input type="number" id="txtQ3_2" class="form-control" name="txtQ3_2" placeholder="" min="0" value="<?php if($pgStatus){ echo $resProgress['rp5_qs3_2']; } ?>"  />
                                                                 </div>
                                                             </div>
 
                                                             <div class="form-group row align-items-center">
                                                                 <div class="col-lg-7 col-6">
-                                                                    <label for="first-name" class="col-form-label text-dark" style="font-size: 1em;">- อาสาสมัครทั้งโลก : <span class="text-muted">* ถ้ามี SUSAR</span></label>
+                                                                    <label for="first-name" class="col-form-label text-dark" style="font-size: 1em;">- อาสาสมัครทั่วโลก : <span class="text-muted">* ถ้ามี SUSAR</span></label>
                                                                 </div>
                                                                 <div class="col-lg-5 col-6">
-                                                                    <input type="number" id="txtQ3_3" class="form-control" name="txtQ3_3" placeholder="" min="0" />
+                                                                    <input type="number" id="txtQ3_3" class="form-control" name="txtQ3_3" placeholder="" min="0" value="<?php if($pgStatus){ echo $resProgress['rp5_qs3_3']; } ?>"  />
                                                                 </div>
                                                             </div>
 
@@ -335,14 +467,18 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                     <span class="text-dark" style="font-size: 1.05em;">4. ตั้งแต่เริ่มโครงการ เคยมี protocal deviation/violation หรือ compliance issue หรือไม่ <span class="text-danger">*</span></span>
                                                     <div class="pt-2 pb-2">
                                                         <fieldset>
+                                                            <div class="radio dn">
+                                                                <input type="radio" class="checkbox-input" id="radio_4_0" name="radio_4" value="na" checked >
+                                                            </div>
+
                                                             <div class="radio mb-1">
-                                                                <input type="radio" class="checkbox-input" id="radio_4_1" name="radio_4" value="0">
+                                                                <input type="radio" class="checkbox-input" id="radio_4_1" name="radio_4" value="0"  <?php if(($pgStatus) && ($resProgress['rp5_qs4'] == '0')){ echo "checked"; }?>>
                                                                 <label for="radio_4_1" class="text-dark">ไม่เคย</label>
                                                             </div>
                                                         </fieldset>
                                                         <fieldset>
                                                             <div class="radio">
-                                                                <input type="radio" class="checkbox-input" id="radio_4_2" name="radio_4" value="1">
+                                                                <input type="radio" class="checkbox-input" id="radio_4_2" name="radio_4" value="1" <?php if(($pgStatus) && ($resProgress['rp5_qs4'] == '1')){ echo "checked"; }?>>
                                                                 <label for="radio_4_2" class="text-dark">เคย (กรุณาแนบหลักฐานประกอบ)</label>
                                                             </div>
                                                         </fieldset>
@@ -354,7 +490,7 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                                         <th></th>
                                                                     </tr>
                                                                 </thead>
-                                                                <tbody>
+                                                                <tbody id="closing_4">
                                                                     <tr><td colspan="2" class="text-center">ไม่มีไฟล์แนบ</td></tr>
                                                                 </tbody>
                                                                 <tbody>
@@ -369,7 +505,6 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                                     </tr>
                                                                 </tbody>
                                                             </table>
-                                                            <!-- <div class="text-right"><button class="btn btn-sm btn-success round">คลิกที่นี่เพื่ออัพโหลดไฟล์</button></div> -->
                                                             
                                                         </div>
                                                     </div>
@@ -379,14 +514,17 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                     <span class="text-dark" style="font-size: 1.05em;">5. ตั้งแต่เริ่มโครงการ เคยมีเรื่องร้องเรียนเกี่ยวกับโครงการหรือไม่ <span class="text-danger">*</span></span>
                                                     <div class="pt-2 pb-2">
                                                         <fieldset>
+                                                            <div class="radio dn">
+                                                                <input type="radio" class="checkbox-input" id="radio_5_0" name="radio_5" value="na" checked >
+                                                            </div>
                                                             <div class="radio mb-1">
-                                                                <input type="radio" class="checkbox-input" id="radio_5_1" name="radio_5" value="0">
+                                                                <input type="radio" class="checkbox-input" id="radio_5_1" name="radio_5" value="0"  <?php if(($pgStatus) && ($resProgress['rp5_qs5'] == '0')){ echo "checked"; }?>>
                                                                 <label for="radio_5_1" class="text-dark">ไม่เคย</label>
                                                             </div>
                                                         </fieldset>
                                                         <fieldset>
                                                             <div class="radio">
-                                                                <input type="radio" class="checkbox-input" id="radio_5_2" name="radio_5" value="1">
+                                                                <input type="radio" class="checkbox-input" id="radio_5_2" name="radio_5" value="1"  <?php if(($pgStatus) && ($resProgress['rp5_qs5'] == '1')){ echo "checked"; }?>>
                                                                 <label for="radio_5_2" class="text-dark">เคย (กรุณาแนบหลักฐานประกอบ)</label>
                                                             </div>
                                                             
@@ -399,7 +537,7 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                                         <th></th>
                                                                     </tr>
                                                                 </thead>
-                                                                <tbody>
+                                                                <tbody id="closing_5">
                                                                     <tr><td colspan="2" class="text-center">ไม่มีไฟล์แนบ</td></tr>
                                                                 </tbody>
                                                                 <tbody>
@@ -422,24 +560,27 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                     <span class="text-dark" style="font-size: 1.05em;">6. การนำเสนอผล มี<u>ข้อมูลระบุตัวตน</u> หรือมีโอกาสที่จะเกิดผล<u>กระทบเชิงลบ</u>ต่ออาสาสมัครหรือชุมชนของอาสาสมัครหรือไม่ <span class="text-danger">*</span></span>
                                                     <div class="pt-2 pb-2">
                                                         <fieldset>
+                                                            <div class="radio dn">
+                                                                <input type="radio" class="checkbox-input" id="radio_6_0" name="radio_6" value="na" checked >
+                                                            </div>
                                                             <div class="radio mb-1">
-                                                                <input type="radio" class="checkbox-input" id="radio_6_1" name="radio_6" value="0">
+                                                                <input type="radio" class="checkbox-input" id="radio_6_1" name="radio_6" value="0"  <?php if(($pgStatus) && ($resProgress['rp5_qs6'] == '0')){ echo "checked"; }?>>
                                                                 <label for="radio_6_1" class="text-dark">โครงการไม่เกี่ยวข้องกับอาสาสมัคร</label>
                                                             </div>
                                                         </fieldset>
                                                         <fieldset>
                                                             <div class="radio mb-1">
-                                                                <input type="radio" class="checkbox-input" id="radio_6_2" name="radio_6" value="1">
+                                                                <input type="radio" class="checkbox-input" id="radio_6_2" name="radio_6" value="1" <?php if(($pgStatus) && ($resProgress['rp5_qs6'] == '1')){ echo "checked"; }?>>
                                                                 <label for="radio_6_2" class="text-dark">ไม่มีความเสี่ยง</label>
                                                             </div>
                                                         </fieldset>
                                                         <fieldset>
                                                             <div class="radio">
-                                                                <input type="radio" class="checkbox-input" id="radio_6_3" name="radio_6" value="2">
-                                                                <label for="radio_6_3" class="text-dark">มีความเสี่ยงบ้าง และมีแผนลดควาามเสี่ยง คือ </label>
+                                                                <input type="radio" class="checkbox-input" id="radio_6_3" name="radio_6" value="2" <?php if(($pgStatus) && ($resProgress['rp5_qs6'] == '2')){ echo "checked"; }?>>
+                                                                <label for="radio_6_3" class="text-dark">มีความเสี่ยงบ้าง และมีแผนลดความเสี่ยง คือ </label>
                                                             </div>
-                                                            <div class="pt-1 mb-2 dn"  id="hd63">
-                                                                <textarea name="" id="" cols="30" rows="4" placeholder="ระบุแผนลดควาามเสี่ยง" class="form-control"></textarea>
+                                                            <div class="pt-1 mb-2 <?php if(($pgStatus) && ($resProgress['rp5_qs6'] == '2')){}else{ echo "dn"; }?>"  id="hd63">
+                                                                <textarea name="txtQ6" id="txtQ6" cols="30" rows="4" placeholder="ระบุแผนลดควาามเสี่ยง" class="form-control"><?php if(($pgStatus) && ($resProgress['rp5_qs6'] == '2')){ echo $resProgress['rp5_qs6_info']; } ?></textarea>
                                                             </div>
                                                         </fieldset>
                                                     </div>
@@ -449,35 +590,45 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                     <span class="text-dark" style="font-size: 1.05em;">7. มีแผนการติดตามและดูแลอาสาสมัครหลังสิ้นสุดโครงการอย่างไร <span class="text-danger">*</span></span>
                                                     <div class="pt-2 pb-2">
                                                         <fieldset>
+                                                            <div class="radio dn">
+                                                                <input type="radio" class="checkbox-input" id="radio_7_0" name="radio_7" value="na" checked >
+                                                            </div>
                                                             <div class="radio mb-1">
-                                                                <input type="radio" class="checkbox-input" id="radio_7_1" name="radio_7" value="0">
+                                                                <input type="radio" class="checkbox-input" id="radio_7_1" name="radio_7" value="0" <?php if(($pgStatus) && ($resProgress['rp5_qs7'] == '0')){ echo "checked"; }?>>
                                                                 <label for="radio_7_1" class="text-dark">โครงการไม่เกี่ยวข้องกับอาสาสมัคร</label>
                                                             </div>
                                                         </fieldset>
                                                         <fieldset>
                                                             <div class="radio mb-1">
-                                                                <input type="radio" class="checkbox-input" id="radio_7_2" name="radio_7" value="1">
+                                                                <input type="radio" class="checkbox-input" id="radio_7_2" name="radio_7" value="1" <?php if(($pgStatus) && ($resProgress['rp5_qs7'] == '1')){ echo "checked"; }?>>
                                                                 <label for="radio_7_2" class="text-dark">ไม่มีแผน <span class="text-danger">ต้องชี้แจงเหตุผล</span></label>
                                                             </div>
-                                                            <div class="pt-1 mb-2 dn" id="hd72">
-                                                                <textarea name="" id="" cols="30" rows="4" placeholder="ระบุเหตุผล" class="form-control"></textarea>
+                                                            <div class="pt-1 mb-2 <?php if(($pgStatus) && ($resProgress['rp5_qs7'] == '1')){}else{ echo "dn"; }?>" id="hd72">
+                                                                <textarea name="txtQ7_1" id="txtQ7_1" cols="30" rows="4" placeholder="ระบุเหตุผล" class="form-control"><?php if(($pgStatus) && ($resProgress['rp5_qs7'] == '1')){ echo $resProgress['rp5_qs7_info_1']; } ?></textarea>
                                                             </div>
                                                         </fieldset>
                                                         <fieldset>
                                                             <div class="radio">
-                                                                <input type="radio" class="checkbox-input" id="radio_7_3" name="radio_7" value="2">
+                                                                <input type="radio" class="checkbox-input" id="radio_7_3" name="radio_7" value="2" <?php if(($pgStatus) && ($resProgress['rp5_qs7'] == '2')){ echo "checked"; }?>>
                                                                 <label for="radio_7_3" class="text-dark">มีแผนการจัดการและดูแล คือ </label>
                                                             </div>
-                                                            <div class="pt-1 mb-2 dn" id="hd73">
-                                                                <textarea name="" id="" cols="30" rows="4" placeholder="ระบุแผนการจัดการและดูแล" class="form-control"></textarea>
+                                                            <div class="pt-1 mb-2 <?php if(($pgStatus) && ($resProgress['rp5_qs7'] == '2')){}else{ echo "dn"; }?>" id="hd73">
+                                                                <textarea name="txtQ7_2" id="txtQ7_2" cols="30" rows="4" placeholder="ระบุแผนการจัดการและดูแล" class="form-control"><?php if(($pgStatus) && ($resProgress['rp5_qs7'] == '2')){ echo $resProgress['rp5_qs7_info_2']; } ?></textarea>
                                                             </div>
                                                         </fieldset>
                                                     </div>
                                                 </div>
-                                                <div class="col-12 col-sm-6">
+                                                <div class="col-12">
                                                     <hr>
-                                                    <span class="text-dark" style="font-size: 1.05em;">8. Final report <span class="text-danger">*</span></span>
-                                                    <div class="pt-1 mb-2 dn0"  id="hd52">
+                                                    <span class="text-dark" style="font-size: 1.05em;">8. รายงานฉบับสมบูรณ์ Final report หรือ Manuscript <small class="text-danger">ถ้าไม่มี ระบุเหตุผล</small></span>
+                                                    <div class="form-group">
+                                                                <textarea name="txtQ8" id="txtQ8" cols="30" rows="4" class="form-control" placeholder="ระบุเหตุผลที่นี่ "></textarea>
+                                                            </div>
+                                                </div>
+                                                <div class="col-12 col-sm-6">
+                                                    
+                                                    <br><span class="text-dark" style="font-size: 1.05em;">8.1 Final report</span>
+                                                        <div class="pt-1 mb-2 dn0"  id="hd52">
                                                             <table class="table table-striped text-dark">
                                                                 <thead>
                                                                     <tr class="bg-secondary">
@@ -485,7 +636,7 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                                         <th></th>
                                                                     </tr>
                                                                 </thead>
-                                                                <tbody>
+                                                                <tbody id="closing_8">
                                                                     <tr><td colspan="2" class="text-center">ยังไม่มีไฟล์ Final report แนบ</td></tr>
                                                                 </tbody>
                                                                 <tbody>
@@ -500,11 +651,13 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                                     </tr>
                                                                 </tbody>
                                                             </table>
+                                                            
                                                         </div>
+
+                                                        
                                                 </div>
-                                                <div class="col-12 col-sm-6">
-                                                    <hr>
-                                                    <span class="text-dark" style="font-size: 1.05em;">9. Manuscript <span class="text-danger">หากไม่มี เจ้าหน้าที่จะบันทึกว่านักวิจัยค้างส่ง</span></span>
+                                                <div class="col-12 col-sm-6" style="padding-top: 20px;">
+                                                    <span class="text-dark" style="font-size: 1.05em;">8.2 Manuscript ที่ตีพิมพ์หรือมีเลข doi แล้ว <br><span class="text-danger">หากไม่มี เจ้าหน้าที่จะบันทึกว่านักวิจัยค้างส่ง</span></span>
                                                     <div class="pt-1 mb-2 dn0"  id="hd52">
                                                             <table class="table table-striped text-dark">
                                                                 <thead>
@@ -513,7 +666,7 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                                         <th></th>
                                                                     </tr>
                                                                 </thead>
-                                                                <tbody>
+                                                                <tbody id="closing_9">
                                                                     <tr><td colspan="2" class="text-center">ยังไม่มีไฟล์ Manuscript แนบ</td></tr>
                                                                 </tbody>
                                                                 <tbody>
@@ -530,9 +683,18 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
                                                             </table>
                                                         </div>
                                                 </div>
-                                                <div class="col-12 text-center">
+
+                                                <div class="col-12">
                                                     <hr>
-                                                    <button class="btn btn-primary btn-lg round" onclick="form9.send()">บันทึกและส่ง</button>
+                                                    <span class="text-dark" style="font-size: 1.05em;">9. สรุปผลการศึกษา (ถ้าแนบ Final report หรือ Manuscript แล้ว ไม่ต้องกรอก)<br><span class="text-danger">ไม่เกิน 3000 คำ ประกอบด้วย Rationale, Objectives, Design, Methods, Results และ Conclusion</span></span>
+                                                    <div class="form-group">
+                                                        <textarea name="txtQ9" id="txtQ9" cols="30" rows="10" class="form-control"></textarea>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12 text-center">
+                                                    <!-- <hr> -->
+                                                    <button class="btn btn-danger btn-lg round" onclick="form9.send()">บันทึกและส่ง</button>
                                                 </div>
                                             </div>
                                         </fieldset>
@@ -579,6 +741,7 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
     <script src="../../../app-assets/vendors/js/extensions/sweetalert2.all.min.js"></script>
     <script src="../../../app-assets/vendors/js/extensions/polyfill.min.js"></script>
     <script src="../../../tools/dropzone/dist/min/dropzone.min.js"></script>
+    <script src="../../../tools/ckeditor_lite/ckeditor.js"></script>
     <!-- END: Page Vendor JS-->
 
     <!-- BEGIN: Theme JS-->
@@ -605,13 +768,25 @@ $project_id = mysqli_real_escape_string($conn, $_REQUEST['project_id']);
         
         $(document).ready(function(){
             project.getInfo($('#txtPid').val())
-            progress.getProgressReportListByID('Progress', $('#txtPid').val())
-            progress.getProgressReportListByID('Amendment', $('#txtPid').val())
-            progress.getProgressReportListByID('Deviation', $('#txtPid').val())
-            progress.getProgressReportListByID('LocalSAE', $('#txtPid').val())
-            progress.getProgressReportListByID('ExtSAE', $('#txtPid').val())
-            progress.getProgressReportListByID('Closing', $('#txtPid').val())
-            progress.getProgressReportListByID('Terminate', $('#txtPid').val()) 
+            getFileProgressSubmissionList($('#txtUid').val(), $('#txtSessionID').val(), 'closing', '4')
+            getFileProgressSubmissionList($('#txtUid').val(), $('#txtSessionID').val(), 'closing', '5')
+            getFileProgressSubmissionList($('#txtUid').val(), $('#txtSessionID').val(), 'closing', '8')
+            getFileProgressSubmissionList($('#txtUid').val(), $('#txtSessionID').val(), 'closing', '9')
+
+            setInterval(() => {
+                form9.autoUpdate('closing')
+            }, 10000);
+
+            var q9 = ''
+            if($("#txtQ9").length) {
+                comment = CKEDITOR.replace( 'txtQ9', {
+                    wordcount : {
+                    showCharCount : false,
+                    showWordCount : true
+                    },
+                    height: '400px'
+                });
+            }
         })
     </script>
 

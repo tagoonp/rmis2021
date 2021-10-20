@@ -12,7 +12,7 @@ var progress = {
         var jxr = $.post(rmis_api + 'progress?stage=getreportlist', {uid: $uid, progress: pg}, function(){}, 'json')
                    .always(function(snap){ 
                        if(snap.status == 'Success'){
-                            $('#panaResearchAll').html('<h3 class="text-left">โครงการวิจัยที่อยู่ระหว่างดำเนินการ</h3><table class="table talbe-striped">' +
+                            $('#panaResearchAll').html('<h3 class="text-left">รายชื่อโครงการวิจัยที่อยู่ระหว่างดำเนินการ</h3><table class="table talbe-striped">' +
                                 '<thead><tr><th>ชื่อโครงการวิจัย</th><th style="width: 200px;">วันที่รับรอง</th><th style="width: 200px;">วันหมดอายุ</th><th style="width: 140px;">แจ้งเตือน</th></tr></thead>' +
                                 '<tbody id="tableResearchList"></tbody>' +
                             '</table>')
@@ -185,4 +185,8 @@ var progress = {
             })
         }
     }
+}
+
+function openForm(form, project_id, sid){
+    window.location = 'progressform_' + form + '?project_id=' + project_id + '&psid=' + sid
 }

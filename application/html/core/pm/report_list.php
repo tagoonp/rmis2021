@@ -254,8 +254,8 @@ $rtype = mysqli_real_escape_string($conn, $_REQUEST['rtype']);
                                                         <div id="textAppdate" class="text-dark" style="margin-top: 4px; font-size: 1.1em;"></div>
                                                     </div>
                                                     <div class="col-12 pt-2">
-                                                        <div style="font-size: 0.9em;" class="text-muted">ใบรับรอง :</div>
-                                                        <div><button class="btn btn-success btn-sm mt-1"><i class="bx bx-link-external"></i> เปิดดูใบรับรอง</button></div>
+                                                        <div style="font-size: 0.9em;" class="text-muted">วันที่ใบรับรองหมดอายุ :</div>
+                                                        <div id="textAppdate" class="text-dark" style="margin-top: 4px; font-size: 1.1em;"></div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -284,18 +284,19 @@ $rtype = mysqli_real_escape_string($conn, $_REQUEST['rtype']);
                                                 $res = $db->fetch($strSQL, true, false);
                                                 if(($res) && ($res['status'])){
                                                     ?>
-                                                    <table class="table talbe-striped"><thead><tr><th>รหัสรายงาน</th><th style="width: 200px;">ประเภท</th><th style="width: 200px;">สถานะปัจจุบัน</th><th style="width: 200px;">วันที่รับรอง</th><th style="width: 200px;">วันหมดอายุ</th></tr></thead>
+                                                    <table class="table talbe-striped"><thead><tr><th style="width: 200px;">ประเภท</th><th style="width: 150px;">รหัสรายงาน</th><th>สถานะปัจจุบัน</th><th style="width: 200px;">วันที่รับรอง</th></tr></thead>
                                                         <tbody>
                                                         <?php 
                                                         foreach ($res['data'] as $row) {
                                                             ?>
                                                             <tr>
-                                                                <td style="vertical-align: top;" class="text-dark"><span class="badge badge-secondary round" style="font-size: 1.1em;">ID : <?php echo $row['rp_session']; ?></span>
+                                                            <td style="vertical-align: top;" class="text-dark">Closing</td>
+                                                                <td style="vertical-align: top;" class="text-dark"><span class="badge badge-secondary round" style="font-size: 0.8em;"><?php echo $row['rp_session']; ?></span>
                                                                     <div>
                                                                         <button class="btn btn-primary- btn-icon round btn-sm" style="padding-bottom: 14px;" onclick="window.location='progressform_closing?project_id=<?php echo $project_id; ?>&psid=<?php echo $row['rp_session'];?>'"><i class="bx bx-search"></i> ดูข้อมูล/ดำเนินการต่อ</button>
                                                                     </div>
                                                                 </td>
-                                                                <td style="vertical-align: top;" class="text-dark">Closing</td>
+                                                                
                                                                 <td style="vertical-align: top;" class="text-dark">
                                                                 <?php 
                                                                     if(($row['rp_progress_status'] == '1') && ($row['rp_sending_status'] == '0')){
@@ -306,9 +307,13 @@ $rtype = mysqli_real_escape_string($conn, $_REQUEST['rtype']);
                                                                         echo $row['status_name'];
                                                                     }
                                                                     
-                                                                ?></td>
+                                                                ?>
+                                                                <div>
+                                                                    
+                                                                </div>
+                                                                </td>
                                                                 <td style="vertical-align: top;" class="text-dark"><?php echo $row['rp_app_date']; ?></td>
-                                                                <td style="vertical-align: top;" class="text-dark"><?php echo $row['rp_exp_date']; ?></td>
+                                                                
                                                             </tr>
                                                             <?php
                                                         }
@@ -318,10 +323,12 @@ $rtype = mysqli_real_escape_string($conn, $_REQUEST['rtype']);
                                                     <?php
                                                 }else{
                                                     ?>
-                                                    <h4 class="card-title">ไม่พบแบบรายงานสรุปผลการวิจัย กรณีปิดโครงการปกติ<br>(Final Report Form)</h4><br><button class="btn btn-primary" onclick="progress.createReport('Closing')">สร้างรายงาน</button>
+                                                    <h4 class="card-title">ไม่พบแบบรายงานสรุปผลการวิจัย (Final Report Form)</h4><br><button class="btn btn-primary" onclick="progress.createReport('Closing')">สร้างรายงาน</button>
                                                     <?php
                                                 }
                                                 ?>
+
+                                                
                                             </div>
                                         </div>
                                         <div class="tab-pane fade  pt-3 pb-2" id="pills-terminate" role="tabpanel" aria-labelledby="pills-terminate-tab">

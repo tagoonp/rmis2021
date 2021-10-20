@@ -4,8 +4,8 @@ var project = {
                    .always(function(snap){ 
                        console.log(snap);
                        if(snap.status == 'Success'){
-                            $('#panaResearchAll').html('<h3 class="text-left  text-dark">โครงการวิจัยที่อยู่ระหว่างดำเนินการ</h3><table class="table talbe-striped">' +
-                                '<thead><tr><th>ชื่อโครงการวิจัย</th><th style="width: 200px;">วันที่รับรอง</th><th style="width: 200px;">วันหมดอายุ</th><th style="width: 140px;">แจ้งเตือนล่าสุด</th></tr></thead>' +
+                            $('#panaResearchAll').html('<h3 class="text-left  text-dark">รายชื่อโครงการวิจัยที่อยู่ระหว่างดำเนินการ</h3><table class="table talbe-striped">' +
+                                '<thead><tr><th>ชื่อโครงการวิจัย</th><th style="width: 200px;">วันที่รับรอง</th><th style="width: 200px;">วันหมดอายุ</th><th style="width: 200px;">วันที่ต้องรายงานความก้าวหน้า</th><th style="width: 200px;">ท่านยังดำเนินการไม่แล้วเสร็จ</th></tr></thead>' +
                                 '<tbody id="tableResearchList"></tbody>' +
                             '</table>')
                             $c = 0;
@@ -28,8 +28,8 @@ var project = {
                                     '</td>' +
                                     '<td>' + snap.ext_data[$c].app_date + '</td>' +
                                     '<td>' + snap.ext_data[$c].exp_date + '</td>' +
-                                    '<td>' + 
-                                    '</td>' +
+                                    '<td>2018-09-27<br>ส่งภายใน 30 วันก่อนถึงกำหนด</td>' +
+                                    '<td><span class="badge badge-danger">Amedment (3)</span><span class="badge badge-danger">Deviation (1)</span><span class="badge badge-danger">Closing (1)</span></td>' +
                                 '</tr>')
                                 $c++;
                             });

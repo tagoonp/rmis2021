@@ -6,6 +6,18 @@ require('../../../configuration/session.php');
 
 $db = new Database();
 $conn = $db->conn();
+
+$c_closing = 0;
+$c_terminate = 0;
+
+$strSQL = "SELECT COUNT(rp_id) cn FROM rec_progress WHERE rp_delete_status = '0' AND rp_progress_id = 'closing' AND rp_uid = '".$_SESSION['rmis_uid']."'";
+$res6 = $db->fetch($strSQL, false);
+if(($res6) && ($res6['cn'] > 0)){ $c_closing = $res6['cn']; }
+
+$strSQL = "SELECT COUNT(rp_id) cn FROM rec_progress WHERE rp_delete_status = '0' AND rp_progress_id = 'terminate' AND rp_uid = '".$_SESSION['rmis_uid']."'";
+$res7 = $db->fetch($strSQL, false);
+if(($res7) && ($res7['cn'] > 0)){ $c_terminate = $res7['cn']; }
+
 ?>
 
 <input type="hidden" id="txtSid" value="<?php echo $_SESSION['rmis_id'];?>">
@@ -182,16 +194,16 @@ $conn = $db->conn();
 
                 <!-- Navigation -->
                 <section id="card-navigation">
-                    <h6 class="mt-1 mb-2 text-dark">โครงการวิจัยของท่าน</h6>
+                    <!-- <h6 class="mt-1 mb-2 text-dark"></h6> -->
                     <div class="row">
                         <div class="col-md-12">
                             <div class="card text-center">
                                 <div class="card-body">
                                     <ul class="nav nav-pills card-header-pills ml-0" id="pills-tab" role="tablist">
                                         <li class="nav-item">
-                                            <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">อยู่ระหว่างการวิจัย</a>
+                                            <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">โครงการที่อยู่ระหว่างดำเนินงาน</a>
                                         </li>
-                                        <li class="nav-item">
+                                        <!-- <li class="nav-item">
                                             <a class="nav-link" id="pills-pg-tab" data-toggle="pill" href="#pills-pg" role="tab" aria-controls="pills-pg" aria-selected="true">Progress report</a>
                                         </li>
                                         <li class="nav-item">
@@ -207,11 +219,11 @@ $conn = $db->conn();
                                             <a class="nav-link" id="pills-esae-tab" data-toggle="pill" href="#pills-esae" role="tab" aria-controls="pills-esae" aria-selected="false">Ext SAE/SUSAR</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" id="pills-closing-tab" data-toggle="pill" href="#pills-closing" role="tab" aria-controls="pills-closing" aria-selected="false">Closing</a>
+                                            <a class="nav-link" id="pills-closing-tab" data-toggle="pill" href="#pills-closing" role="tab" aria-controls="pills-closing" aria-selected="false">Closing<?php if($c_closing != 0){ echo ' <span class="badge badge-pill- badge-danger pl-1 pr-1 round" style="padding-left: 10px !important; padding-right: 12px !important;" >'.$c_closing.'</span>';} ?></a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" id="pills-terminate-tab" data-toggle="pill" href="#pills-terminate" role="tab" aria-controls="pills-terminate" aria-selected="false">Termination</a>
-                                        </li>
+                                            <a class="nav-link" id="pills-terminate-tab" data-toggle="pill" href="#pills-terminate" role="tab" aria-controls="pills-terminate" aria-selected="false">Termination<?php if($c_terminate != 0){ echo ' <span class="badge badge-pill- badge-danger pl-1 pr-1 round" style="padding-left: 10px !important; padding-right: 12px !important;" >'.$c_terminate.'</span>';} ?></a>
+                                        </li> -->
                                     </ul>
                                     <div class="tab-content" id="pills-tabContent">
                                         <div class="tab-pane fade show active pt-3 pb-2" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
@@ -233,7 +245,82 @@ $conn = $db->conn();
                                             <div id="panaResearchExtSAE"></div>
                                         </div>
                                         <div class="tab-pane fade  pt-3 pb-2" id="pills-closing" role="tabpanel" aria-labelledby="pills-closing-tab">
-                                            <div id="panaResearchClosing"></div>
+                                        <?php 
+                                            if($c_closing == 0){
+                                                ?>
+                                                <h4 class="card-title mt-3">ไม่มีแบบรายงานรอตรวจสอบ</h4>
+                                                <?php
+                                            }else{
+                                                ?>
+                                                <table class="table table-striped mt-3">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 120px;">รหัสรายงาน</th>
+                                                            <th>ชื่อโครงการ</th>
+                                                            <th style="width: 150px;">วัน-เวลาที่ส่ง</th>
+                                                            <th style="width: 100px;">สถานะปัจจุบัน</th>
+                                                            <th style="width: 160px;"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php 
+                                                        $strSQL = "SELECT * FROM rec_progress a INNER JOIN research b ON a.rp_id_rs = b.id_rs
+                                                                   INNER JOIN type_status_research c ON a.rp_progress_status = c.id_status_research
+                                                                   WHERE 
+                                                                   a.rp_uid = '".$_SESSION['rmis_uid']."'
+                                                                   AND a.rp_sending_status = '1' AND a.rp_confirm_1 = '0' AND a.rp_delete_status = '0' AND a.rp_progress_id = 'closing'";
+                                                        $res = $db->fetch($strSQL, true, false);
+                                                        if(($res) && ($res['status'])){
+                                                            foreach ($res['data'] as $row) {
+                                                                ?>
+                                                                <tr>
+                                                                    <td style="vertical-align: top;"><?php echo $row['rp_session']; ?></td>
+                                                                    <td style="vertical-align: top;" class="text-dark">
+                                                                        <div>
+                                                                            <span class="badge badge-success mb-1 round"><?php echo "REC.".$row['code_apdu']; ?></span>
+                                                                        </div>
+                                                                        <?php 
+                                                                        if($row['title_th'] == '-'){
+                                                                            echo $row['title_en'];
+                                                                        }else{
+                                                                            echo $row['title_th']. " (".$row['title_en'].")";
+                                                                        }
+                                                                        ?>
+                                                                        <?php 
+                                                                        if(($row['rp_progress_status'] == '2') || ($row['rp_progress_status'] == '20')){
+                                                                            ?>
+                                                                            <div style="margin-top: 10px ;padding: 10px 10px 3px 10px; border: dashed; border-width: 1px; border-color: red; border-radius: 10px;">
+                                                                                <label for="">ข้อความจากสำนักงาน :</label> <br>
+                                                                                <div>
+                                                                                <?php 
+                                                                                $strSQL = "SELECT rpl_message FROM rec_progress_log WHERE rpl_session = '".$row['rp_session']."' AND rpl_delete = '0' ORDER BY rpl_id DESC LIMIT 1";
+                                                                                $resMessage = $db->fetch($strSQL, false);
+                                                                                if($resMessage){ echo $resMessage['rpl_message']; }
+                                                                                ?>
+                                                                                </div>
+                                                                                
+                                                                            </div>
+                                                                            <?php
+                                                                        }
+                                                                        ?>
+                                                                        
+                                                                    </td>
+                                                                    <td style="vertical-align: top;"><?php echo $row['rp_sending_datetime']; ?></td>
+                                                                    <td style="vertical-align: top;"><span class="badge round badge-light-danger"><?php echo $row['status_name']; ?></span></td>
+                                                                    <td style="vertical-align: top;" class="text-right">
+                                                                        <button class="btn btn-icon btn-success" style="padding-bottom: 10px;" onclick="openForm('closing', '<?php echo $row['rp_id_rs'];?>', '<?php echo $row['rp_session'];?>')"><i class="bx bx-search"></i></button>
+                                                                        <button class="btn btn-icon btn-danger" style="padding-bottom: 10px;"><i class="bx bx-trash"></i></button>
+                                                                    </td>
+                                                                </tr>
+                                                                <?php
+                                                            }
+                                                        }
+                                                        ?>
+                                                    </tbody>
+                                                </table>
+                                                <?php
+                                            }
+                                            ?>
                                         </div>
                                         <div class="tab-pane fade  pt-3 pb-2" id="pills-terminate" role="tabpanel" aria-labelledby="pills-terminate-tab">
                                             <div id="panaResearchTerminate"></div>
