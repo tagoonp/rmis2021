@@ -10,22 +10,28 @@ NOTE:
 PLACE HERE YOUR OWN SCSS CODES AND IF NEEDED, OVERRIDE THE STYLES FROM THE OTHER STYLESHEETS.
 WE WILL RELEASE FUTURE UPDATES SO IN ORDER TO NOT OVERWRITE YOUR STYLES IT'S BETTER LIKE THIS.  */
 
-@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@200;300&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@200;300&display=swap');
 
-* {
+body, html, h1, h2, h3, h4, h5, h6, p {
 	font-family: 'Sarabun', sans-serif;
 	/* font-size: 18px !important; */
 	/* color: #000 !important; */
+	/* color: #fff !important; */
+/* } */ 
+
+body, html, h1, h2, h3, h4, h5, h6, p, tr, td, .th, table, tr, td, th, li, .nav {
+	font-family: 'IBM Plex Sans Thai', sans-serif !important;
 }
 
-.th, table, tr, td, th{
-	font-family: 'Sarabun', sans-serif !important;
+.th, table, tr, td, th, .table, span{
+	/* font-family: 'Sarabun', sans-serif !important; */
+	font-family: 'IBM Plex Sans Thai', sans-serif !important;
 }
 
-h1, h2, h3, h4, h5{
+/* h1, h2, h3, h4, h5{
 	font-family: 'Sarabun', sans-serif;
 	font-weight: 400;
-}
+} */
 
 /* html .navbar-static .app-content .content-wrapper{
 	padding: 1.8rem 1rem 0
@@ -65,4 +71,12 @@ h1, h2, h3, h4, h5{
 	border-color: #22b169 !important;
     background-color: #22b169 !important;
     color: #fff;
+}
+
+body.dark-layout h1, body.dark-layout h2, body.dark-layout h3, body.dark-layout h4, body.dark-layout h5, body.dark-layout h6, body.dark-layout .h1, body.dark-layout .h2, body.dark-layout .h3, body.dark-layout .h4, body.dark-layout .h5, body.dark-layout .h6 table.formDemo {
+    color: #bdd1f8;
+}
+
+.swal2-title{
+	color: #000 !important;
 }

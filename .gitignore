@@ -1,5 +1,6 @@
 # ignore node dependency directories
 application/tmp_file/
+application/sendgrid.env
 
 # ignore log files and databases
 *.log
@@ -9,5 +10,4 @@ application/tmp_file/
 application/configuration/server.inc.php
 application/api/*
 application/assets/1.0.1/js/core.js
-
 

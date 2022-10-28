@@ -2,7 +2,7 @@ Dropzone.autoDiscover = false;
 
 if(($('#mydropzone_4').length) || ($('#mydropzone_5').length) || ($('#mydropzone_8').length) || ($('#mydropzone_9').length)){
     var dropzone_4 = new Dropzone("#mydropzone_4", {
-        dictDefaultMessage: '<i class="bx bx-upload"></i> อัพโหลดไฟล์ที่นี่',
+        dictDefaultMessage: '<i class="bx bx-upload"></i> คลิกหรือลากไฟล์เพื่ออัพโหลดที่นี่',
         url: rmisc_api + '/upload_file_attach.php?progress=closing&fileposition=4&uid=' + $('#txtUid').val() + '&pid=' + $('#txtPid').val() + '&session_id=' + $('#txtSessionID').val(),
         acceptedFiles: 'application/pdf, .docx, .doc, image/*, .xls, .xlsx',
         maxFilesize: 100,
@@ -34,7 +34,7 @@ if(($('#mydropzone_4').length) || ($('#mydropzone_5').length) || ($('#mydropzone
     });
     
     var dropzone_5 = new Dropzone("#mydropzone_5", {
-        dictDefaultMessage: '<i class="bx bx-upload"></i> อัพโหลดไฟล์ที่นี่',
+        dictDefaultMessage: '<i class="bx bx-upload"></i> คลิกหรือลากไฟล์เพื่ออัพโหลดที่นี่',
         url: rmisc_api + '/upload_file_attach.php?progress=closing&fileposition=5&uid=' + $('#txtUid').val() + '&pid=' + $('#txtPid').val() + '&session_id=' + $('#txtSessionID').val(),
         acceptedFiles: 'application/pdf, .docx, .doc, image/*, .xls, .xlsx',
         maxFilesize: 100,
@@ -65,7 +65,7 @@ if(($('#mydropzone_4').length) || ($('#mydropzone_5').length) || ($('#mydropzone
     });
     
     var dropzone_8 = new Dropzone("#mydropzone_8", {
-        dictDefaultMessage: '<i class="bx bx-upload"></i> อัพโหลดไฟล์ที่นี่',
+        dictDefaultMessage: '<i class="bx bx-upload"></i> คลิกหรือลากไฟล์เพื่ออัพโหลดที่นี่',
         url: rmisc_api + '/upload_file_attach.php?progress=closing&fileposition=8&uid=' + $('#txtUid').val() + '&pid=' + $('#txtPid').val() + '&session_id=' + $('#txtSessionID').val(),
         acceptedFiles: 'application/pdf, .docx, .doc, image/*, .xls, .xlsx',
         maxFilesize: 100,
@@ -97,7 +97,7 @@ if(($('#mydropzone_4').length) || ($('#mydropzone_5').length) || ($('#mydropzone
     });
     
     var dropzone_9 = new Dropzone("#mydropzone_9", {
-        dictDefaultMessage: '<i class="bx bx-upload"></i> อัพโหลดไฟล์ที่นี่',
+        dictDefaultMessage: '<i class="bx bx-upload"></i> คลิกหรือลากไฟล์เพื่ออัพโหลดที่นี่',
         url: rmisc_api + '/upload_file_attach.php?progress=closing&fileposition=9&uid=' + $('#txtUid').val() + '&pid=' + $('#txtPid').val() + '&session_id=' + $('#txtSessionID').val(),
         acceptedFiles: 'application/pdf, .docx, .doc, image/*, .xls, .xlsx',
         maxFilesize: 100,
@@ -305,6 +305,8 @@ var form9 = {
            $check++; 
         }
 
+        
+
         if($check != 0){
             Swal.fire(
                 {
@@ -317,6 +319,185 @@ var form9 = {
             return ;
         }
 
+        $return = $('#txtReturn').val();
+
+        if($return == '2') // ส่งกรรมการพิจารณา
+        {
+            if(reviewer_q == 0){
+                Swal.fire(
+                    {
+                    icon: "error",
+                    title: 'คำเตือน',
+                    text: 'กรุณาเลือกกรรมการ/ผู้เชี่ยวชาญอิสระ',
+                    confirmButtonClass: 'btn btn-danger',
+                    }
+                )
+                return ;
+            }else{
+                if((reviewer_q == 1) && (reviewer_ec != 0)){
+                    Swal.fire(
+                        {
+                        icon: "error",
+                        title: 'คำเตือน',
+                        text: 'ท่านเป็นกรรมการ/ผู้เชี่ยวชาญอิสระเพียงคนเดียว กรุณาทำแบบประเมินจากหน้านี้และเลือกผลการตรวจสอบอื่น ๆ',
+                        confirmButtonClass: 'btn btn-danger',
+                        }
+                    )
+                    return ;
+                }
+                
+                if(reviewer_ec_reviewed == 0){
+                    Swal.fire(
+                        {
+                        icon: "error",
+                        title: 'คำเตือน',
+                        text: 'กรุณาทำแบบประเมินก่อน',
+                        confirmButtonClass: 'btn btn-danger',
+                        }
+                    )
+                    return ;
+                }
+            }
+        }else{
+            if((reviewer_q == 1) && (reviewer_ec != 0) && (reviewer_ec_reviewed == 0)){
+                Swal.fire(
+                    {
+                    icon: "error",
+                    title: 'คำเตือน',
+                    text: 'กรุณาทำแบบประเมินก่อน',
+                    confirmButtonClass: 'btn btn-danger',
+                    }
+                )
+                return ;
+            }
+        }
+
+        console.log($return);
+        
+        
+
+        if($return == '1') // ขอข้อมูลเพิ่มเติม
+        {
+
+        }
+
+        if($return == '2') // ส่งกรรมการ
+        {
+
+        }
+
+        if($return == '3') // ดำเนินการอื่น ๆ
+        {
+
+        }
+
+        if($return == '4') // ส่งเจ้าหน้าที่ออกใบรับรอง
+        {
+            Swal.fire({
+                title: 'ยืนยันดำเนินการ',
+                text: "ท่านต้องการส่งเจ้าหน้าที่เพื่อออกใบรับรอง/รับทราบหรือไม่",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'ยืนยัน',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonClass: 'btn btn-danger mr-1',
+                cancelButtonClass: 'btn btn-secondary',
+                buttonsStyling: false,
+            }).then(function (result) {
+                if (result.value) {
+                    var param = {
+                        session_id: $('#txtSessionID').val(),
+                        uid: $('#txtUid').val(),
+                        role: $('#txtRole').val(),
+                        comment: comment.getData(),
+                        progress: 'closing'
+                    }
+                    var jxr = $.post(rmisc_api + 'progress?stage=send_staff_tomakedoc', param, function(){}, 'json')
+                           .always(function(snap){
+                               console.log(snap);
+                               if(snap.status == 'Success'){
+                                    Swal.fire({
+                                        title: 'สำเร็จ',
+                                        text: "ข้อมูลถูกส่งไปยังเจ้าหน้าที่เรียบร้อยแล้ว",
+                                        icon: 'success',
+                                        showCancelButton: true,
+                                        confirmButtonColor: '#3085d6',
+                                        cancelButtonColor: '#d33',
+                                        confirmButtonText: 'ยืนยัน',
+                                        cancelButtonText: 'ยกเลิก',
+                                        confirmButtonClass: 'btn btn-danger mr-1',
+                                        cancelButtonClass: 'btn btn-secondary',
+                                        buttonsStyling: false,
+                                    }).then(function (result) {
+                                        if (result.value) {
+                                            window.location = './'
+                                        }
+                                    })
+                               }
+                            })
+                }
+            })
+        }1
+
+        if($return == '5') // นำเข้าที่ประชุม
+        {
+            Swal.fire({
+                title: 'ยืนยันดำเนินการ',
+                text: "ท่านต้องการส่งเจ้าหน้าที่เพื่อนำเข้าที่ประชุมหรือไม่",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'ยืนยัน',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonClass: 'btn btn-danger mr-1',
+                cancelButtonClass: 'btn btn-secondary',
+                buttonsStyling: false,
+            }).then(function (result) {
+                if (result.value) {
+                    var param = {
+                        session_id: $('#txtSessionID').val(),
+                        uid: $('#txtUid').val(),
+                        role: $('#txtRole').val(),
+                        comment: comment.getData(),
+                        progress: 'closing'
+                    }
+                    var jxr = $.post(rmisc_api + 'progress?stage=send_staff_addboard', param, function(){}, 'json')
+                           .always(function(snap){
+                               console.log(snap);
+                               if(snap.status == 'Success'){
+                                    Swal.fire({
+                                        title: 'สำเร็จ',
+                                        text: "ข้อมูลถูกส่งไปยังเจ้าหน้าที่เรียบร้อยแล้ว",
+                                        icon: 'success',
+                                        showCancelButton: false,
+                                        confirmButtonColor: '#3085d6',
+                                        cancelButtonColor: '#d33',
+                                        confirmButtonText: 'ยืนยัน',
+                                        cancelButtonText: 'ยกเลิก',
+                                        confirmButtonClass: 'btn btn-danger mr-1',
+                                        cancelButtonClass: 'btn btn-secondary',
+                                        buttonsStyling: false,
+                                    }).then(function (result) {
+                                        if (result.value) {
+                                            window.location = './'
+                                        }
+                                    })
+                               }
+                            })
+                }
+            })
+        }
+
+        if($return == '6') // เลขาส่งตอบข้อเสนอแนะ
+        {
+
+        }
+
+        return ;
+
         var param = {
             session_id: $('#txtSessionID').val(),
             result: $('#txtReturn').val(),
@@ -324,6 +505,9 @@ var form9 = {
             role: $('#txtRole').val(),
             comment: comment.getData()
         }
+
+        console.log(param);
+        return ;
 
         Swal.fire({
             title: 'ยืนยันดำเนินการ',
@@ -377,10 +561,14 @@ var form9 = {
 
         form9.autoUpdate('closing')
 
+        return ;
+        
         $check = 0;
         $val = $('input[name=radio_1]:checked').val()
 
         $msg_arr = [];
+
+        return ;
 
         if(($val == '1') && ($('#txtQ1').val() == '')){
             $('#txtQ1').addClass('is-invalid')
@@ -411,6 +599,7 @@ var form9 = {
             }
         }
 
+        return ;
         if($('#txtQ3_1').val() == ''){
             $('#txtQ3_1').addClass('is-invalid'); $check++; $msg_arr.push('3.1')
         }
@@ -447,6 +636,8 @@ var form9 = {
             )
             return ;
         }
+
+        return ;
 
 
         Swal.fire({
@@ -488,6 +679,9 @@ var form9 = {
                     q7_1_info: $('#txtQ7_1').val(),
                     q7_2_info: $('#txtQ7_2').val()
                 }
+
+                console.log(param);
+                return ;
                 var jxr = $.post(rmisc_api + 'progress?stage=send', param, function(){}, 'json')
                            .always(function(snap){
                                console.log(snap);
@@ -546,6 +740,10 @@ var form9 = {
             q7_1_info: $('#txtQ7_1').val(),
             q7_2_info: $('#txtQ7_2').val()
         }
+
+        console.log(param);
+        return ;
+
         var jxr = $.post(rmisc_api + 'progress?stage=autosave', param, function(resp){ console.log(resp); })
 
         
@@ -755,10 +953,9 @@ var f9ass = {
         $q3 = $('input[name=txtrQ3]:checked').val()
         $q4 = $('input[name=txtrQ4]:checked').val()
         $q5 = $('input[name=txtrQ5]:checked').val()
-        $q6 = $('input[name=txtrQ6]:checked').val()
         $q7 = $('input[name=txtrQ7]:checked').val()
 
-        if(($q1 == 'na') || ($q2 == 'na') || ($q3 == 'na') || ($q4 == 'na') || ($q5 == 'na') || ($q6 == 'na') || ($q7 == 'na')){
+        if(($q1 == 'na') || ($q2 == 'na') || ($q3 == 'na') || ($q4 == 'na') || ($q5 == 'na') || ($q7 == 'na')){
             Swal.fire({
                 icon: "error",
                 title: 'เกิดข้อผิดพลาด!',
@@ -780,11 +977,10 @@ var f9ass = {
             q4_info: $('#txtrComment4').val(),
             q5: $q5,
             q5_info: $('#txtrComment5').val(),
-            q6: $q6,
-            q6_info: $('#txtrComment6').val(),
             q7: $q7,
             q7_info: $('#txtrComment7').val(),
             session_id: $('#txtSessionID').val(),
+            role: $('#txtRole').val(),
             progress: 'closing'
         }
 
@@ -829,5 +1025,152 @@ var f9ass = {
         //     })
         // }
         
+    },
+    saveComment(){
+        if(revComment.getData() == ''){
+            Swal.fire(
+                                {
+                                icon: "error",
+                                title: 'เกิดข้อผิดพลาด!',
+                                text: 'กรุณากรอกข้อคำถาม/ข้อเสนอแนะ',
+                                confirmButtonClass: 'btn btn-danger',
+                                }
+                            )
+            return ;
+        }
+
+        var param = {
+            uid: $('#txtUid').val(),
+            sid: $('#txtSessionID').val(),
+            cid: $('#txtCommentId').val(),
+            comment: revComment.getData(),
+            progress: 'closing'
+        }
+
+        // console.log(param);
+        // return ;
+
+        var jxr = $.post(rmisc_api + 'progress?stage=reviewer_comment_submission', param, function(){}, 'json')
+                       .always(function(snap){
+                           console.log(snap);
+                           if(snap.status == 'Success'){
+                               $('#commentModal').modal('hide')
+                               f9ass.listCommentStaff()
+                           }else{
+                                Swal.fire({
+                                    icon: "error",
+                                    title: 'เกิดข้อผิดพลาด!',
+                                    text: 'ไม่สามารถบันทึกแบบประเมินได้',
+                                    confirmButtonClass: 'btn btn-danger',
+                                })
+                           }
+                       })
+    },
+    listCommentStaff(){
+        var param = {
+            uid: $('#txtUid').val(),
+            sid: $('#txtSessionID').val(),
+            progress: 'closing'
+        }
+
+        var jxr = $.post(rmisc_api + 'progress?stage=reviewer_comment_list_staff', param, function(){}, 'json')
+                       .always(function(snap){
+                           console.log(snap);
+                           $('#commentList').html('<tr><td colspan="3" class="text-center">ไม่มีข้อเสนอแนะ</td></tr>')
+                           if(snap.status == 'Success'){
+                            $('#commentList').html('')
+                                $c = 1;
+
+                                
+
+                                snap.data.forEach(i=>{
+
+                                    $btnMoveup = ''
+                                    $btnMovedown = ''
+
+                                    if($c == 1){
+                                        $btnMoveup = ' disabled '
+                                    }
+
+                                    if($c == snap.data.length){
+                                        $btnMovedown = ' disabled '
+                                    }
+
+                                    console.log($c);
+                                    
+                                    $('#commentList').append('<tr><td style="vertical-align: top;">' + $c + '</td><td>' + i.recc_comment + '</td><td class="text-right" style="vertical-align: top;">' + 
+                                        '<button class="btn btn-secondary btn-icon btn-sm" style="padding-top: 3px; padding-bottom: 10px; margin-right: 4px;" onclick="f9ass.updateComment(' + i.recc_id + ')"><i class="bx bx-pencil"></i></button>'  +
+                                        '<button class="btn btn-warning btn-icon btn-sm" ' + $btnMoveup + ' style="padding-top: 3px; padding-bottom: 10px; margin-right: 4px;" onclick="f9ass.updateSeq(' + i.recc_id + ', 0, ' + i.recc_seq + ', ' + i.recc_up_to + ', ' + i.recc_down_to + ')"><i class="bx bx-up-arrow-alt"></i></button>'  +
+                                        '<button class="btn btn-warning btn-icon btn-sm" ' + $btnMovedown + ' style="padding-top: 3px; padding-bottom: 10px; margin-right: 4px;" onclick="f9ass.updateSeq(' + i.recc_id + ', 1, ' + i.recc_seq + ', ' + i.recc_up_to + ', ' + i.recc_down_to + ')"><i class="bx bx-down-arrow-alt"></i></button>'  +
+                                        '<button class="btn btn-danger btn-icon btn-sm" style="padding-top: 3px; padding-bottom: 10px;" onclick="f9ass.deleteComment(' + i.recc_id + ')"><i class="bx bx-trash"></i></button>'  +
+                                    '</td></tr>')
+                                    $c++;
+                                })
+                           }
+                       })
+    },
+    deleteComment(id_recc){
+        Swal.fire({
+                    title: 'คำเตือน',
+                    text: "ยืนยันการลบข้อเสนอแนะนี้หรือไม่",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'ยืนยัน',
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonClass: 'btn btn-danger mr-1',
+                    cancelButtonClass: 'btn btn-secondary',
+                    buttonsStyling: false,
+                }).then(function (result) {
+                    if (result.value) {
+                        var param = {
+                            id_recc: id_recc,
+                            sid: $('#txtSessionID').val()
+                        }
+                
+                        var jxr = $.post(rmisc_api + 'progress?stage=reviewer_comment_delete', param, function(){}, 'json')
+                                       .always(function(snap){
+                                           console.log(snap);
+                                            f9ass.listCommentStaff()
+                                       })
+                    }
+                })
+    },
+    updateSeq(id_recc, upordown, curr_seq, upto, downto){
+        var param = {
+            id_recc: id_recc,
+            direction: upordown,
+            up: upto,
+            down: downto,
+            curr: curr_seq,
+            sid: $('#txtSessionID').val()
+        }
+
+        var jxr = $.post(rmisc_api + 'progress?stage=reviewer_comment_changeseq', param, function(){}, 'json')
+                       .always(function(snap){
+                           console.log(snap);
+                            f9ass.listCommentStaff()
+                       })
+    },
+    updateComment(comment_id){
+        var param = {
+            cid: comment_id,
+            sid: $('#txtSessionID').val(),
+            progress: 'closing'
+        }
+
+        var jxr = $.post(rmisc_api + 'progress?stage=reviewer_comment_forupdate', param, function(){}, 'json')
+                       .always(function(snap){
+                           console.log(snap);
+                            $('#txtCommentId').val('')
+                            console.log(snap.data.recc_comment);
+                           if(snap.status == 'Success'){
+                                $('#txtCommentId').val(comment_id)
+                                $('#commentModal').modal()
+                                revComment.setData(snap.data[0].recc_comment)
+                           }
+                           
+                       })
     }
 }

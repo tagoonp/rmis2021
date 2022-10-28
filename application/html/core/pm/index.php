@@ -1,4 +1,4 @@
-<?php 
+<?php
 require('../../../configuration/server.inc.php');
 require('../../../configuration/configuration.php');
 require('../../../configuration/database.php'); 
@@ -7,396 +7,402 @@ require('../../../configuration/session.php');
 $db = new Database();
 $conn = $db->conn();
 
-$c_closing = 0;
-$c_terminate = 0;
+$sid = mysqli_real_escape_string($conn, $_SESSION['rmis_id']);
+$role = mysqli_real_escape_string($conn, $_SESSION['rmis_role']);
+$uid = mysqli_real_escape_string($conn, $_SESSION['rmis_uid']);
 
-$strSQL = "SELECT COUNT(rp_id) cn FROM rec_progress WHERE rp_delete_status = '0' AND rp_progress_id = 'closing' AND rp_uid = '".$_SESSION['rmis_uid']."'";
-$res6 = $db->fetch($strSQL, false);
-if(($res6) && ($res6['cn'] > 0)){ $c_closing = $res6['cn']; }
-
-$strSQL = "SELECT COUNT(rp_id) cn FROM rec_progress WHERE rp_delete_status = '0' AND rp_progress_id = 'terminate' AND rp_uid = '".$_SESSION['rmis_uid']."'";
-$res7 = $db->fetch($strSQL, false);
-if(($res7) && ($res7['cn'] > 0)){ $c_terminate = $res7['cn']; }
+include "../../../configuration/user.inc.php";
 
 ?>
 
-<input type="hidden" id="txtSid" value="<?php echo $_SESSION['rmis_id'];?>">
-<input type="hidden" id="txtUid" value="<?php echo $_SESSION['rmis_uid'];?>">
-<input type="hidden" id="txtRole" value="<?php echo $_SESSION['rmis_role'];?>">
 <!DOCTYPE html>
-<html class="loading" lang="en" data-textdirection="ltr">
-<!-- BEGIN: Head-->
-
+<html lang="en">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
-    <meta name="description" content="RMIS@MED PSU admin is super flexible, powerful, clean &amp; modern responsive bootstrap 4 admin template with unlimited possibilities.">
-    <meta name="keywords" content="admin template, RMIS@MED PSU admin template, dashboard template, flat admin template, responsive admin template, web app">
-    <meta name="author" content="PIXINVENT">
-    <title>RMIS@MED PSU Continuing Report for PI</title>
-    <link rel="apple-touch-icon" href="../../../app-assets/images/ico/apple-icon-120.png">
-    <link rel="shortcut icon" type="image/x-icon" href="../../../app-assets/images/ico/favicon.ico">
-    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,500,600%7CIBM+Plex+Sans:300,400,500,600,700" rel="stylesheet">
+  <title>RMIS :: <?php echo $role;?></title>
+  <meta charset="UTF-8">
+  <!-- <meta http-equiv='cache-control' content='no-cache'> -->
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
 
-    <!-- BEGIN: Vendor CSS-->
-    <link rel="stylesheet" type="text/css" href="../../../app-assets/vendors/css/vendors.min.css">
-    <link rel="stylesheet" type="text/css" href="../../../app-assets/vendors/css/tables/datatable/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" type="text/css" href="../../../app-assets/vendors/css/tables/datatable/responsive.bootstrap4.min.css">
-    <link rel="stylesheet" type="text/css" href="../../../app-assets/vendors/css/tables/datatable/buttons.bootstrap4.min.css">
-    <link rel="stylesheet" type="text/css" href="../../../app-assets/vendors/css/animate/animate.css">
-    <link rel="stylesheet" type="text/css" href="../../../app-assets/vendors/css/extensions/sweetalert2.min.css">
-    <!-- END: Vendor CSS-->
+  <!-- General CSS Files -->
+  <link rel="stylesheet" href="../../../old/node_modules/bootstrap/dist/css/bootstrap.min.css" >
+  <link rel="stylesheet" href="../../../old/node_modules/@fortawesome/fontawesome-free/css/all.css">
+  <link rel="stylesheet" href="../../../old/node_modules/bootstrap-daterangepicker/daterangepicker.css">
+  <link rel="stylesheet" href="../../../old/node_modules/sweetalert/dist/sweetalert.css">
+  <link rel="stylesheet" href="../../../old/node_modules/preload.js/dist/css/preload.css">
 
-    <!-- BEGIN: Theme CSS-->
-    <link rel="stylesheet" type="text/css" href="../../../app-assets/css/bootstrap.css">
-    <link rel="stylesheet" type="text/css" href="../../../app-assets/css/bootstrap-extended.css">
-    <link rel="stylesheet" type="text/css" href="../../../app-assets/css/colors.css">
-    <link rel="stylesheet" type="text/css" href="../../../app-assets/css/components.css">
-    <!-- <link rel="stylesheet" type="text/css" href="../../../app-assets/css/themes/dark-layout.css">
-    <link rel="stylesheet" type="text/css" href="../../../app-assets/css/themes/semi-dark-layout.css"> -->
-    <!-- END: Theme CSS-->
+  <!-- CSS Libraries -->
 
-    <!-- BEGIN: Page CSS-->
-    <link rel="stylesheet" type="text/css" href="../../../app-assets/css/core/menu/menu-types/horizontal-menu.css">
-    <!-- END: Page CSS-->
-
-    <!-- BEGIN: Custom CSS-->
-    <link rel="stylesheet" type="text/css" href="../../../assets/css/style.css">
-    <!-- END: Custom CSS-->
-
+  <!-- Template CSS -->
+  <link rel="stylesheet" href="../../../old/assets/css/style.css">
+  <link rel="stylesheet" href="../../../old/assets/custom/1.0.1/css/style.css">
 </head>
-<!-- END: Head-->
 
-<!-- BEGIN: Body-->
-
-<body class="horizontal-layout horizontal-menu navbar-static dark-layout 2-columns   footer-static  " data-open="hover" data-menu="horizontal-menu" data-col="2-columns" data-layout="dark-layout">
-
-    <!-- BEGIN: Header-->
-    <?php require('comp/header.php'); ?>
-    <!-- END: Header-->
-
-
-    <!-- BEGIN: Main Menu-->
-    <div class="header-navbar navbar-expand-sm navbar navbar-horizontal navbar-sticky navbar-dark navbar-without-dd-arrow" role="navigation" data-menu="menu-wrapper">
-        <div class="navbar-header d-xl-none d-block">
-            <ul class="nav navbar-nav flex-row">
-                <li class="nav-item mr-auto"><a class="navbar-brand" href="index.html">
-                        <div class="brand-logo">
-                            <svg class="logo" width="26px" height="26px" viewbox="0 0 26 26" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                                <title>icon</title>
-                                <defs>
-                                    <lineargradient id="linearGradient-1" x1="50%" y1="0%" x2="50%" y2="100%">
-                                        <stop stop-color="#5A8DEE" offset="0%"></stop>
-                                        <stop stop-color="#699AF9" offset="100%"></stop>
-                                    </lineargradient>
-                                    <lineargradient id="linearGradient-2" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop stop-color="#FDAC41" offset="0%"></stop>
-                                        <stop stop-color="#E38100" offset="100%"></stop>
-                                    </lineargradient>
-                                </defs>
-                                <g id="Sprite" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                    <g id="sprite" transform="translate(-69.000000, -61.000000)">
-                                        <g id="Group" transform="translate(17.000000, 15.000000)">
-                                            <g id="icon" transform="translate(52.000000, 46.000000)">
-                                                <path id="Combined-Shape" d="M13.5909091,1.77272727 C20.4442608,1.77272727 26,7.19618701 26,13.8863636 C26,20.5765403 20.4442608,26 13.5909091,26 C6.73755742,26 1.18181818,20.5765403 1.18181818,13.8863636 C1.18181818,13.540626 1.19665566,13.1982714 1.22574292,12.8598734 L6.30410592,12.859962 C6.25499466,13.1951893 6.22958398,13.5378796 6.22958398,13.8863636 C6.22958398,17.8551125 9.52536149,21.0724191 13.5909091,21.0724191 C17.6564567,21.0724191 20.9522342,17.8551125 20.9522342,13.8863636 C20.9522342,9.91761479 17.6564567,6.70030817 13.5909091,6.70030817 C13.2336969,6.70030817 12.8824272,6.72514561 12.5388136,6.77314791 L12.5392575,1.81561642 C12.8859498,1.78721495 13.2366963,1.77272727 13.5909091,1.77272727 Z"></path>
-                                                <path id="Combined-Shape" d="M13.8863636,4.72727273 C18.9447899,4.72727273 23.0454545,8.82793741 23.0454545,13.8863636 C23.0454545,18.9447899 18.9447899,23.0454545 13.8863636,23.0454545 C8.82793741,23.0454545 4.72727273,18.9447899 4.72727273,13.8863636 C4.72727273,13.5378966 4.74673291,13.1939746 4.7846258,12.8556254 L8.55057141,12.8560055 C8.48653249,13.1896162 8.45300462,13.5340745 8.45300462,13.8863636 C8.45300462,16.887125 10.8856023,19.3197227 13.8863636,19.3197227 C16.887125,19.3197227 19.3197227,16.887125 19.3197227,13.8863636 C19.3197227,10.8856023 16.887125,8.45300462 13.8863636,8.45300462 C13.529522,8.45300462 13.180715,8.48740462 12.8430777,8.55306931 L12.8426531,4.78608796 C13.1851829,4.7472336 13.5334422,4.72727273 13.8863636,4.72727273 Z" fill="#4880EA"></path>
-                                                <path id="Combined-Shape" d="M13.5909091,1.77272727 C20.4442608,1.77272727 26,7.19618701 26,13.8863636 C26,20.5765403 20.4442608,26 13.5909091,26 C6.73755742,26 1.18181818,20.5765403 1.18181818,13.8863636 C1.18181818,13.540626 1.19665566,13.1982714 1.22574292,12.8598734 L6.30410592,12.859962 C6.25499466,13.1951893 6.22958398,13.5378796 6.22958398,13.8863636 C6.22958398,17.8551125 9.52536149,21.0724191 13.5909091,21.0724191 C17.6564567,21.0724191 20.9522342,17.8551125 20.9522342,13.8863636 C20.9522342,9.91761479 17.6564567,6.70030817 13.5909091,6.70030817 C13.2336969,6.70030817 12.8824272,6.72514561 12.5388136,6.77314791 L12.5392575,1.81561642 C12.8859498,1.78721495 13.2366963,1.77272727 13.5909091,1.77272727 Z" fill="url(#linearGradient-1)"></path>
-                                                <rect id="Rectangle" x="0" y="0" width="7.68181818" height="7.68181818"></rect>
-                                                <rect id="Rectangle" fill="url(#linearGradient-2)" x="0" y="0" width="7.68181818" height="7.68181818"></rect>
-                                            </g>
-                                        </g>
-                                    </g>
-                                </g>
-                            </svg>
-                        </div>
-                        <h2 class="brand-text mb-0">RMIS@MED PSU</h2>
-                    </a></li>
-                <li class="nav-item nav-toggle"><a class="nav-link modern-nav-toggle pr-0" data-toggle="collapse"><i class="bx bx-x d-block d-xl-none font-medium-4 primary toggle-icon"></i></a></li>
-            </ul>
-        </div>
-        <div class="shadow-bottom"></div>
-        <!-- Horizontal menu content-->
-        <div class="navbar-container main-menu-content" data-menu="menu-container">
-            <!-- include ../../../includes/mixins-->
-            <ul class="nav navbar-nav" id="main-menu-navigation" data-menu="menu-navigation" data-icon-style="lines">
-                <li class="nav-item"><a class="dropdown-toggle nav-link text-dark" href="./" ><i class="menu-livicon" data-icon="home"></i><span data-i18n="Apps">หน้าแรก</span></a></li>
-
-                <!-- <li class="dropdown nav-item" data-menu="dropdown"><a class="dropdown-toggle nav-link" href="#" data-toggle="dropdown"><i class="menu-livicon" data-icon="comments"></i><span data-i18n="Apps">แบบรายงาน/แบบเสนอ</span></a>
-                    <ul class="dropdown-menu">
-                        <li data-menu=""><a class="dropdown-item align-items-center" href="app-email.html" data-toggle="dropdown"><i class="bx bx-right-arrow-alt"></i><span data-i18n="Email">รายงานความก้าวหน้าโครงการ (Progress report)</span></a>
-                        </li>
-                        <li data-menu=""><a class="dropdown-item align-items-center" href="app-chat.html" data-toggle="dropdown"><i class="bx bx-right-arrow-alt"></i><span data-i18n="Chat">แบบเสนอขอแก้ไขเพิ่มเติมโครงการวิจัย (Amendment)</span></a>
-                        </li>
-                        <li data-menu=""><a class="dropdown-item align-items-center" href="app-todo.html" data-toggle="dropdown"><i class="bx bx-right-arrow-alt"></i><span data-i18n="Todo">แบบรายงานการดำเนินงานวิจัยที่เบี่ยงเบน (Deviation/Non-compliance)</span></a>
-                        </li>
-                        <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a class="dropdown-item align-items-center dropdown-toggle" href="#" data-toggle="dropdown"><i class="bx bx-right-arrow-alt"></i><span data-i18n="Invoice">รายงานเหตุการณ์ไม่พึงประสงค์ชนิดร้าย</span></a>
-                            <ul class="dropdown-menu">
-                                <li data-menu=""><a class="dropdown-item align-items-center" href="app-invoice-list.html" data-toggle="dropdown"><i class="bx bx-right-arrow-alt"></i><span data-i18n="Invoice List">ในสถาบัน (Local SAE-expedited)</span></a>
-                                </li>
-                                <li data-menu=""><a class="dropdown-item align-items-center" href="app-invoice.html" data-toggle="dropdown"><i class="bx bx-right-arrow-alt"></i><span data-i18n="Invoice">นอกสถาบัน (External SAE/SUSAR)</span></a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li data-menu=""><a class="dropdown-item align-items-center" href="app-file-manager.html" data-toggle="dropdown"><i class="bx bx-right-arrow-alt"></i><span data-i18n="File Manager">แบบรายงานสรุปผลการวิจัย (Scheduled Closing)</span></a>
-                        <li data-menu=""><a class="dropdown-item align-items-center" href="app-file-manager.html" data-toggle="dropdown"><i class="bx bx-right-arrow-alt"></i><span data-i18n="File Manager">แบบรายงานการยุติโครงการวิจัยก่อนกำหนด (Termination Report Form)</span></a>
-                        </li>
-                    </ul>
-                </li>
-                
-                <li class="dropdown nav-item" data-menu="dropdown"><a class="dropdown-toggle nav-link" href="#" data-toggle="dropdown"><i class="menu-livicon" data-icon="morph-folder"></i><span data-i18n="Others">Others</span></a>
-                    <ul class="dropdown-menu">
-                        <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a class="dropdown-item align-items-center dropdown-toggle" href="#" data-toggle="dropdown"><i class="bx bx-right-arrow-alt"></i><span data-i18n="Menu Levels">Menu Levels</span></a>
-                            <ul class="dropdown-menu">
-                                <li data-menu=""><a class="dropdown-item align-items-center" href="#" data-toggle="dropdown"><i class="bx bx-right-arrow-alt"></i><span data-i18n="Second Level">Second Level</span></a></li>
-                                <li class="dropdown dropdown-submenu" data-menu="dropdown-submenu"><a class="dropdown-item align-items-center dropdown-toggle" href="#" data-toggle="dropdown"><i class="bx bx-right-arrow-alt"></i><span data-i18n="Second Level">Second Level</span></a>
-                                    <ul class="dropdown-menu">
-                                        <li data-menu=""><a class="dropdown-item align-items-center" href="#" data-toggle="dropdown"><i class="bx bx-right-arrow-alt"></i><span data-i18n="Third Level">Third Level</span></a>
-                                        </li>
-                                        <li data-menu=""><a class="dropdown-item align-items-center" href="#" data-toggle="dropdown"><i class="bx bx-right-arrow-alt"></i><span data-i18n="Third Level">Third Level</span></a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="disabled" data-menu=""><a class="dropdown-item align-items-center" href="#" data-toggle="dropdown"><i class="bx bx-right-arrow-alt"></i><span data-i18n="Disabled Menu">Disabled Menu</span></a>
-                        </li>
-                        <li data-menu=""><a class="dropdown-item align-items-center" href="https://pixinvent.com/demo/RMIS@MED PSU-clean-bootstrap-admin-dashboard-template/documentation" data-toggle="dropdown" target="_blank"><i class="bx bx-right-arrow-alt"></i><span data-i18n="Documentation">Documentation</span></a>
-                        </li>
-                        <li data-menu=""><a class="dropdown-item align-items-center" href="https://pixinvent.ticksy.com/" data-toggle="dropdown" target="_blank"><i class="bx bx-right-arrow-alt"></i><span data-i18n="Raise Support">Raise Support</span></a>
-                        </li>
-                    </ul>
-                </li> -->
-            </ul>
-        </div>
-        <!-- /horizontal menu content-->
-    </div>
-    <!-- END: Main Menu-->
-
-    <!-- BEGIN: Content-->
-    <div class="app-content content">
-        <div class="content-overlay"></div>
-        <div class="content-wrapper">
-            <div class="content-header row">
-                <div class="content-header-left col-12 mb-2 mt-1">
-                    <div class="breadcrumbs-top">
-                        <h5 class="content-header-title float-left pr-1 mb-0 text-dark">ระบบรายงานความก้าวหน้างานวิจัย</h5>
-                        <div class="breadcrumb-wrapper d-none d-sm-block">
-                            <ol class="breadcrumb p-0 mb-0 pl-1">
-                                <li class="breadcrumb-item"><a href="./"><i class="bx bx-home-alt"></i></a></li>
-                            </ol>
-                        </div>
-                    </div>
+<body>
+  <div id="app">
+    <div class="main-wrapper main-wrapper-1">
+      <div class="navbar-bg"></div>
+      <nav class="navbar navbar-expand-lg main-navbar">
+        <form class="form-inline mr-auto">
+          <ul class="navbar-nav mr-3">
+            <!-- <li><a href="#" data-toggle="sidebar" class="nav-link nav-link-lg"><i class="fas fa-bars"></i></a></li> -->
+            <li><a href="index?uid=<?php echo $uid; ?>&role=<?php echo $role; ?>" data-toggle="sidebar-" class="nav-link" style="font-size: 24px; font-weight: bold;">RMIS</li>
+            <li><a href="#" data-toggle="search" class="nav-link nav-link-lg d-sm-none"><i class="fas fa-search"></i></a></li>
+          </ul>
+          <div class="search-element">
+            <!-- <input class="form-control" type="search" placeholder="ค้นหา ..." aria-label="Search" data-width="250">
+            <button class="btn" type="submit"><i class="fas fa-search"></i></button>
+            <div class="search-backdrop"></div> -->
+          </div>
+        </form>
+        <ul class="navbar-nav navbar-right">
+          <li class="dropdown dropdown-list-toggle dn"><a href="#" data-toggle="dropdown" class="nav-link nav-link-lg message-toggle beep-"><i class="far fa-envelope"></i></a>
+            <div class="dropdown-menu dropdown-list dropdown-menu-right">
+              <div class="dropdown-header">Messages
+                <div class="float-right">
+                  <a href="#">Mark All As Read</a>
                 </div>
+              </div>
+              <div class="dropdown-list-content dropdown-list-message">
+                <a href="#" class="dropdown-item dropdown-item-unread">
+                  <div class="dropdown-item-avatar">
+                    <img alt="image" src="../../../old/assets/img/avatar/avatar-1.png" class="rounded-circle">
+                    <div class="is-online"></div>
+                  </div>
+                  <div class="dropdown-item-desc">
+                    <b>Kusnaedi</b>
+                    <p>Hello, Bro!</p>
+                    <div class="time">10 Hours Ago</div>
+                  </div>
+                </a>
+                <a href="#" class="dropdown-item dropdown-item-unread">
+                  <div class="dropdown-item-avatar">
+                    <img alt="image" src="../../../old/assets/img/avatar/avatar-2.png" class="rounded-circle">
+                  </div>
+                  <div class="dropdown-item-desc">
+                    <b>Dedik Sugiharto</b>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit</p>
+                    <div class="time">12 Hours Ago</div>
+                  </div>
+                </a>
+                <a href="#" class="dropdown-item dropdown-item-unread">
+                  <div class="dropdown-item-avatar">
+                    <img alt="image" src="../../../old/assets/img/avatar/avatar-3.png" class="rounded-circle">
+                    <div class="is-online"></div>
+                  </div>
+                  <div class="dropdown-item-desc">
+                    <b>Agung Ardiansyah</b>
+                    <p>Sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    <div class="time">12 Hours Ago</div>
+                  </div>
+                </a>
+                <a href="#" class="dropdown-item">
+                  <div class="dropdown-item-avatar">
+                    <img alt="image" src="../../../old/assets/img/avatar/avatar-4.png" class="rounded-circle">
+                  </div>
+                  <div class="dropdown-item-desc">
+                    <b>Ardian Rahardiansyah</b>
+                    <p>Duis aute irure dolor in reprehenderit in voluptate velit ess</p>
+                    <div class="time">16 Hours Ago</div>
+                  </div>
+                </a>
+                <a href="#" class="dropdown-item">
+                  <div class="dropdown-item-avatar">
+                    <img alt="image" src="../../../old/assets/img/avatar/avatar-5.png" class="rounded-circle">
+                  </div>
+                  <div class="dropdown-item-desc">
+                    <b>Alfa Zulkarnain</b>
+                    <p>Exercitation ullamco laboris nisi ut aliquip ex ea commodo</p>
+                    <div class="time">Yesterday</div>
+                  </div>
+                </a>
+              </div>
+              <div class="dropdown-footer text-center">
+                <a href="#">View All <i class="fas fa-chevron-right"></i></a>
+              </div>
             </div>
-            <div class="content-body">
-                <!-- Basic card section start -->
+          </li>
+          <li class="dropdown dropdown-list-toggle dn"><a href="#" data-toggle="dropdown" class="nav-link notification-toggle nav-link-lg beep-"><i class="far fa-bell"></i></a>
+            <div class="dropdown-menu dropdown-list dropdown-menu-right">
+              <div class="dropdown-header">Notifications
+                <div class="float-right">
+                  <a href="#">Mark All As Read</a>
+                </div>
+              </div>
+              <div class="dropdown-list-content dropdown-list-icons">
+                <a href="#" class="dropdown-item dropdown-item-unread">
+                  <div class="dropdown-item-icon bg-primary text-white">
+                    <i class="fas fa-code"></i>
+                  </div>
+                  <div class="dropdown-item-desc">
+                    Template update is available now!
+                    <div class="time text-primary">2 Min Ago</div>
+                  </div>
+                </a>
+                <a href="#" class="dropdown-item">
+                  <div class="dropdown-item-icon bg-info text-white">
+                    <i class="far fa-user"></i>
+                  </div>
+                  <div class="dropdown-item-desc">
+                    <b>You</b> and <b>Dedik Sugiharto</b> are now friends
+                    <div class="time">10 Hours Ago</div>
+                  </div>
+                </a>
+                <a href="#" class="dropdown-item">
+                  <div class="dropdown-item-icon bg-success text-white">
+                    <i class="fas fa-check"></i>
+                  </div>
+                  <div class="dropdown-item-desc">
+                    <b>Kusnaedi</b> has moved task <b>Fix bug header</b> to <b>Done</b>
+                    <div class="time">12 Hours Ago</div>
+                  </div>
+                </a>
+                <a href="#" class="dropdown-item">
+                  <div class="dropdown-item-icon bg-danger text-white">
+                    <i class="fas fa-exclamation-triangle"></i>
+                  </div>
+                  <div class="dropdown-item-desc">
+                    Low disk space. Let's clean it!
+                    <div class="time">17 Hours Ago</div>
+                  </div>
+                </a>
+                <a href="#" class="dropdown-item">
+                  <div class="dropdown-item-icon bg-info text-white">
+                    <i class="fas fa-bell"></i>
+                  </div>
+                  <div class="dropdown-item-desc">
+                    Welcome to Stisla template!
+                    <div class="time">Yesterday</div>
+                  </div>
+                </a>
+              </div>
+              <div class="dropdown-footer text-center">
+                <a href="#">View All <i class="fas fa-chevron-right"></i></a>
+              </div>
+            </div>
+          </li>
+          <li class="dropdown"><a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
+            <img alt="image" src="../../../old/assets/img/avatar/avatar-1.png" class="rounded-circle mr-1">
+            <div class="d-sm-none d-lg-inline-block">สวัสดี, คุณ<?php echo $userFullname;?> ( <?php echo $role; ?> )</div></a>
+            <div class="dropdown-menu dropdown-menu-right">
+              <a href="profile?uid=<?php echo $uid;?>&role=<?php echo $role; ?>" class="dropdown-item has-icon">
+                <i class="far fa-user"></i> ข้อมูลส่วนตัว
+              </a>
+              <a href="activities?uid=<?php echo $uid;?>&role=<?php echo $role; ?>" class="dropdown-item has-icon">
+                <i class="fas fa-bolt"></i> บันทึกกิจกรรม
+              </a>
+              <a href="settings?uid=<?php echo $uid;?>&role=<?php echo $role; ?>" class="dropdown-item has-icon">
+                <i class="fas fa-cog"></i> ตั้งค่า
+              </a>
+              <div class="dropdown-divider"></div>
+              <a href="Javascript:authen.signout()" class="dropdown-item has-icon text-danger">
+                <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+              </a>
+            </div>
+          </li>
+        </ul>
+      </nav>
 
-                <!-- Navigation -->
-                <section id="card-navigation">
-                    <!-- <h6 class="mt-1 mb-2 text-dark"></h6> -->
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="card text-center">
-                                <div class="card-body">
-                                    <ul class="nav nav-pills card-header-pills ml-0" id="pills-tab" role="tablist">
-                                        <li class="nav-item">
-                                            <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">โครงการที่อยู่ระหว่างดำเนินงาน</a>
-                                        </li>
-                                        <!-- <li class="nav-item">
-                                            <a class="nav-link" id="pills-pg-tab" data-toggle="pill" href="#pills-pg" role="tab" aria-controls="pills-pg" aria-selected="true">Progress report</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="pills-amend-tab" data-toggle="pill" href="#pills-amend" role="tab" aria-controls="pills-amend" aria-selected="false">Amendment</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="pills-deviation-tab" data-toggle="pill" href="#pills-deviation" role="tab" aria-controls="pills-deviation" aria-selected="false">Deviation/Non-compliance</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="pills-lsae-tab" data-toggle="pill" href="#pills-lsae" role="tab" aria-controls="pills-lsae" aria-selected="false">Local SAE</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="pills-esae-tab" data-toggle="pill" href="#pills-esae" role="tab" aria-controls="pills-esae" aria-selected="false">Ext SAE/SUSAR</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="pills-closing-tab" data-toggle="pill" href="#pills-closing" role="tab" aria-controls="pills-closing" aria-selected="false">Closing<?php if($c_closing != 0){ echo ' <span class="badge badge-pill- badge-danger pl-1 pr-1 round" style="padding-left: 10px !important; padding-right: 12px !important;" >'.$c_closing.'</span>';} ?></a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="pills-terminate-tab" data-toggle="pill" href="#pills-terminate" role="tab" aria-controls="pills-terminate" aria-selected="false">Termination<?php if($c_terminate != 0){ echo ' <span class="badge badge-pill- badge-danger pl-1 pr-1 round" style="padding-left: 10px !important; padding-right: 12px !important;" >'.$c_terminate.'</span>';} ?></a>
-                                        </li> -->
-                                    </ul>
-                                    <div class="tab-content" id="pills-tabContent">
-                                        <div class="tab-pane fade show active pt-3 pb-2" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
-                                            <div id="panaResearchAll"></div>
-                                        </div>
-                                        <div class="tab-pane fade  pt-3 pb-2" id="pills-pg" role="tabpanel" aria-labelledby="pills-pg-tab">
-                                            <div id="panaResearchProgress"></div>
-                                        </div>
-                                        <div class="tab-pane fade  pt-3 pb-2" id="pills-amend" role="tabpanel" aria-labelledby="pills-amend-tab">
-                                            <div id="panaResearchAmendment"></div>
-                                        </div>
-                                        <div class="tab-pane fade  pt-3 pb-2" id="pills-deviation" role="tabpanel" aria-labelledby="pills-deviation-tab">
-                                            <div id="panaResearchDeviation"></div>
-                                        </div>
-                                        <div class="tab-pane fade  pt-3 pb-2" id="pills-lsae" role="tabpanel" aria-labelledby="pills-lsae-tab">
-                                            <div id="panaResearchLocalSAE"></div>
-                                        </div>
-                                        <div class="tab-pane fade  pt-3 pb-2" id="pills-esae" role="tabpanel" aria-labelledby="pills-esae-tab">
-                                            <div id="panaResearchExtSAE"></div>
-                                        </div>
-                                        <div class="tab-pane fade  pt-3 pb-2" id="pills-closing" role="tabpanel" aria-labelledby="pills-closing-tab">
-                                        <?php 
-                                            if($c_closing == 0){
-                                                ?>
-                                                <h4 class="card-title mt-3">ไม่มีแบบรายงานรอตรวจสอบ</h4>
-                                                <?php
-                                            }else{
-                                                ?>
-                                                <table class="table table-striped mt-3">
-                                                    <thead>
-                                                        <tr>
-                                                            <th style="width: 120px;">รหัสรายงาน</th>
-                                                            <th>ชื่อโครงการ</th>
-                                                            <th style="width: 150px;">วัน-เวลาที่ส่ง</th>
-                                                            <th style="width: 100px;">สถานะปัจจุบัน</th>
-                                                            <th style="width: 160px;"></th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <?php 
-                                                        $strSQL = "SELECT * FROM rec_progress a INNER JOIN research b ON a.rp_id_rs = b.id_rs
-                                                                   INNER JOIN type_status_research c ON a.rp_progress_status = c.id_status_research
-                                                                   WHERE 
-                                                                   a.rp_uid = '".$_SESSION['rmis_uid']."'
-                                                                   AND a.rp_sending_status = '1' AND a.rp_confirm_1 = '0' AND a.rp_delete_status = '0' AND a.rp_progress_id = 'closing'";
-                                                        $res = $db->fetch($strSQL, true, false);
-                                                        if(($res) && ($res['status'])){
-                                                            foreach ($res['data'] as $row) {
-                                                                ?>
-                                                                <tr>
-                                                                    <td style="vertical-align: top;"><?php echo $row['rp_session']; ?></td>
-                                                                    <td style="vertical-align: top;" class="text-dark">
-                                                                        <div>
-                                                                            <span class="badge badge-success mb-1 round"><?php echo "REC.".$row['code_apdu']; ?></span>
-                                                                        </div>
-                                                                        <?php 
-                                                                        if($row['title_th'] == '-'){
-                                                                            echo $row['title_en'];
-                                                                        }else{
-                                                                            echo $row['title_th']. " (".$row['title_en'].")";
-                                                                        }
-                                                                        ?>
-                                                                        <?php 
-                                                                        if(($row['rp_progress_status'] == '2') || ($row['rp_progress_status'] == '20')){
-                                                                            ?>
-                                                                            <div style="margin-top: 10px ;padding: 10px 10px 3px 10px; border: dashed; border-width: 1px; border-color: red; border-radius: 10px;">
-                                                                                <label for="">ข้อความจากสำนักงาน :</label> <br>
-                                                                                <div>
-                                                                                <?php 
-                                                                                $strSQL = "SELECT rpl_message FROM rec_progress_log WHERE rpl_session = '".$row['rp_session']."' AND rpl_delete = '0' ORDER BY rpl_id DESC LIMIT 1";
-                                                                                $resMessage = $db->fetch($strSQL, false);
-                                                                                if($resMessage){ echo $resMessage['rpl_message']; }
-                                                                                ?>
-                                                                                </div>
-                                                                                
-                                                                            </div>
-                                                                            <?php
-                                                                        }
-                                                                        ?>
-                                                                        
-                                                                    </td>
-                                                                    <td style="vertical-align: top;"><?php echo $row['rp_sending_datetime']; ?></td>
-                                                                    <td style="vertical-align: top;"><span class="badge round badge-light-danger"><?php echo $row['status_name']; ?></span></td>
-                                                                    <td style="vertical-align: top;" class="text-right">
-                                                                        <button class="btn btn-icon btn-success" style="padding-bottom: 10px;" onclick="openForm('closing', '<?php echo $row['rp_id_rs'];?>', '<?php echo $row['rp_session'];?>')"><i class="bx bx-search"></i></button>
-                                                                        <button class="btn btn-icon btn-danger" style="padding-bottom: 10px;"><i class="bx bx-trash"></i></button>
-                                                                    </td>
-                                                                </tr>
-                                                                <?php
-                                                            }
-                                                        }
-                                                        ?>
-                                                    </tbody>
-                                                </table>
-                                                <?php
-                                            }
-                                            ?>
-                                        </div>
-                                        <div class="tab-pane fade  pt-3 pb-2" id="pills-terminate" role="tabpanel" aria-labelledby="pills-terminate-tab">
-                                            <div id="panaResearchTerminate"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+      <!-- Main Content -->
+      <div class="main-content">
+        <section class="section">
+          <div class="section-header">
+            <h1>หน้าแรก</h1>
+          </div>
+
+          <div class="section-body">
+              <div class="row">
+                  <div class="col-12 col-sm-4 mb-4">
+                      <h5 class="text-dark">เสนอโครงการวิจัยใหม่</h5>
+                      <h6>(Submit new initial review)</h6>
+                      <button class="btn btn-success btn-block text-left"  data-toggle="modal" data-target="#submitNewInitial"><i class="fas fa-plus"></i> ลงทะเบียนโครงการวิจัยใหม่</button>
+                      <button class="btn btn-success btn-block text-left" id="submitNewInitialUnsend" onclick=gotoPage("rs-status-1-unsend?uid=<?php echo $uid;?>&role=<?php echo $role;?>")><i class="fas fa-bars"></i> โครงการวิจัยที่ยังไม่ยืนยันการส่ง</button>
+                      <?php
+                      $strSQL = "SELECT * FROM research a INNER JOIN type_research b ON a.id_type  = b.id_type
+                      INNER JOIN type_status_research c ON a.id_status_research = c.id_status_research
+                      INNER JOIN type_personnel d ON a.id_personnel = d.id_personnel
+                      INNER JOIN dept e ON a.id_dept = e.id_dept
+                      INNER JOIN useraccount f ON a.id_pm = f.id_pm
+                      INNER JOIN userinfo  g ON f.id = g.user_id
+                      WHERE
+                        a.draft_status = '0'
+                        AND a.delete_flag = 'N'
+                        AND a.sendding_status = 'Y'
+                        AND a.research_status = 'new'
+                        AND f.delete_status = '0'
+                        AND (a.id_status_research = '2' OR a.id_status_research = '20')
+                        AND g.user_id = '$uid'";
+                      $result = mysqli_query($conn, $strSQL);
+                      if(($result) && (mysqli_num_rows($result) > 0)){
+                        ?>
+                        <button class="btn btn-warning btn-block text-left" onclick="window.location='rs-wait-update-list-1?uid=<?php echo $uid;?>&role=<?php echo $role;?>&year=<?php echo $sysdateyear; ?>'"><i class="fas fa-bars"></i> แบบเสนอรอการแก้ไข/ตอบข้อเสนอแนะ ( <?php echo mysqli_num_rows($result); ?> )</button>
+                        <?php
+                      }else{
+                        ?>
+                        <button class="btn btn-success btn-block text-left" onclick="window.location='rs-wait-update-list-1?uid=<?php echo $uid;?>&role=<?php echo $role;?>&year=<?php echo $sysdateyear; ?>'"><i class="fas fa-bars"></i> แบบเสนอรอการแก้ไข/ตอบข้อเสนอแนะ</button>
+                        <?php
+                      }
+                      ?>
+
+                      <button class="btn btn-success btn-block text-left" onclick="window.location='rs-wait-update-list-2?uid=<?php echo $uid;?>&role=<?php echo $role;?>&year=<?php echo $sysdateyear; ?>'"><i class="fas fa-bars"></i> แบบเสนอรอการตอบข้อคำถาม</button>
+                      <button class="btn btn-success btn-block text-left" onclick="window.location='your-init-list?uid=<?php echo $uid;?>&role=<?php echo $role;?>&year=<?php echo $sysdateyear; ?>'"><i class="fas fa-bars"></i> ตรวจสอบโครงการวิจัยทั้งหมดของท่าน</button>
+                  </div>
+
+                  <div class="col-12 col-sm-4 mb-4">
+                    <h5 class="text-dark">รายงานโครงการที่กำลังดำเนินการวิจัย</h5>
+                      <h6>Continuing report</h6>
+                      <button class="btn btn-<?php 
+                      $strSQL = "SELECT COUNT(*) cm FROM rec_progress WHERE rp_progress_status IN ('2', '20') AND rp_uid = '$uid' AND rp_delete_status = '0' AND rp_sending_status = '1'";
+                      $resultCont = mysqli_query($conn, $strSQL);
+                      if(($resultCont) && (mysqli_num_rows($resultCont) > 0)){
+                        $dy = mysqli_fetch_assoc($resultCont);
+                        $c = 0;
+                        // print_r($dy);
+                        if($dy['cm'] > 0){ echo "danger"; }else{ echo "success"; $c = $dy['cm']; }
+                      }else{
+                        echo "successs";
+                      }
+                      ?> btn-block text-left" onclick="window.open('http://localhost/rmis2021/', '_blank')"><i class="fas fa-external-link-alt"></i> ท่านมีโครงการที่อยู่ระหว่างดำเนินการ (3)<?php 
+                      if($dy['cm'] > 0){
+                          echo " (".$dy['cm'].")";
+                      }
+                      // echo $strSQL;
+                      ?> </button>
+
+
+                
+                  </div>
+
+                  <div class="col-12 col-sm-4">
+                  <h5 class="text-dark">โครงการที่ปิดโครงการแล้ว</h5>
+                      <h6>Closed project</h6>
+                    <button class="btn btn-<?php 
+                      $strSQL = "SELECT COUNT(*) cm FROM rec_progress WHERE rp_progress_status IN ('2', '20') AND rp_uid = '$uid' AND rp_delete_status = '0' AND rp_sending_status = '1'";
+                      $resultCont = mysqli_query($conn, $strSQL);
+                      if(($resultCont) && (mysqli_num_rows($resultCont) > 0)){
+                        $dy = mysqli_fetch_assoc($resultCont);
+                        $c = 0;
+                        // print_r($dy);
+                        if($dy['cm'] > 0){ echo "danger"; }else{ echo "success"; $c = $dy['cm']; }
+                      }else{
+                        echo "successs";
+                      }
+                      ?> btn-block text-left" onclick="window.open('http://localhost/rmis2021/', '_blank')"><i class="fas fa-external-link-alt"></i> รายชื่อโครงการที่รายงานปิดโครงการแล้ว<?php 
+                      if($dy['cm'] > 0){
+                          echo " (".$dy['cm'].")";
+                      }
+                      // echo $strSQL;
+                      ?> </button>
                     </div>
-                </section>
-                <!--/ Navigation -->
-
-            </div>
+              </div>
+          </div>
+        </section>
+      </div>
+      <footer class="main-footer">
+        <div class="footer-left">
+          Copyright &copy; 2018 <div class="bullet"></div> โดย <a href="http://medinfo2.psu.ac.th/research/hrec/" target="_blank">หน่วยส่งเสริมและพัฒนาทางวิชาการ</a>
         </div>
+        <div class="footer-right">
+          2.3.0
+        </div>
+      </footer>
     </div>
-    <!-- END: Content-->
-    <div class="sidenav-overlay"></div>
-    <div class="drag-target"></div>
+  </div>
 
-    <?php 
-    // require('comp/footer.php');
-    ?>
+  <!-- General JS Scripts -->
+  <script type="text/javascript" src="../../../old/node_modules/jquery/dist/jquery.min.js" ></script>
+  <script type="text/javascript" src="../../../old/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="../../../old/node_modules/popper.js/dist/umd/popper.min.js"></script>
+  <script type="text/javascript" src="../../../old/node_modules/sweetalert/dist/sweetalert.min.js"></script>
+  <script type="text/javascript" src="../../../old/node_modules/moment/min/moment.min.js"></script>
+  <script type="text/javascript" src="../../../old/node_modules/bootstrap-daterangepicker/daterangepicker.js"></script>
+  <script type="text/javascript" src="../../../old/node_modules/jquery.nicescroll/dist/jquery.nicescroll.min.js"></script>
+  <script type="text/javascript" src="../../../old/node_modules/preload.js/dist/js/preload.js"></script>
+  <script src="../../../old/assets/js/stisla.js"></script>
+
+  <!-- Template JS File -->
+  <script src="../../../old/assets/js/scripts.js"></script>
+  <script src="../../../old/assets/custom/1.0.1/js/config.js?token=<?php echo $dateu; ?>"></script>
+  <script src="../../../old/assets/custom/1.0.1/js/custom.js?token=<?php echo $dateu; ?>"></script>
+  <script src="../../../old/assets/custom/1.0.1/js/authen.js?token=<?php echo $dateu; ?>"></script>
+  
 
 
-    <!-- BEGIN: Vendor JS-->
-    <script src="../../../app-assets/vendors/js/vendors.min.js"></script>
-    <script src="../../../app-assets/fonts/LivIconsEvo/js/LivIconsEvo.tools.js"></script>
-    <script src="../../../app-assets/fonts/LivIconsEvo/js/LivIconsEvo.defaults.js"></script>
-    <script src="../../../app-assets/fonts/LivIconsEvo/js/LivIconsEvo.min.js"></script>
-    <!-- BEGIN Vendor JS-->
+  <script src="../../../old/assets/custom/1.0.1/js/function.js?token=<?php echo $dateu; ?>"></script>
+  <script src="../../../old/assets/custom/1.0.1/js/research_register.js?token=<?php echo $dateu; ?>"></script>
+  <script src="../../../old/assets/custom/1.0.1/js/pi.2.1.js?token=<?php echo $dateu; ?>"></script>
 
-    <!-- BEGIN: Page Vendor JS-->
-    <script src="../../../app-assets/vendors/js/ui/jquery.sticky.js"></script>
-    <script src="../../../app-assets/vendors/js/tables/datatable/jquery.dataTables.min.js"></script>
-    <script src="../../../app-assets/vendors/js/tables/datatable/dataTables.bootstrap4.min.js"></script>
-    <script src="../../../app-assets/vendors/js/tables/datatable/dataTables.buttons.min.js"></script>
-    <script src="../../../app-assets/vendors/js/tables/datatable/buttons.html5.min.js"></script>
-    <script src="../../../app-assets/vendors/js/tables/datatable/buttons.print.min.js"></script>
-    <script src="../../../app-assets/vendors/js/tables/datatable/buttons.bootstrap4.min.js"></script>
-    <script src="../../../app-assets/vendors/js/tables/datatable/pdfmake.min.js"></script>
-    <script src="../../../app-assets/vendors/js/tables/datatable/vfs_fonts.js"></script>
-    <script src="../../../app-assets/vendors/js/extensions/sweetalert2.all.min.js"></script>
-    <script src="../../../app-assets/vendors/js/extensions/polyfill.min.js"></script>
-    <!-- END: Page Vendor JS-->
+  <script>
+      $(document).ready(function(){
 
-    <!-- BEGIN: Theme JS-->
-    <script src="../../../app-assets/js/scripts/configs/horizontal-menu.js"></script>
-    <script src="../../../app-assets/js/scripts/configs/vertical-menu-dark.js"></script>
-    <script src="../../../app-assets/js/core/app-menu.js"></script>
-    <script src="../../../app-assets/js/core/app.js"></script>
-    <script src="../../../app-assets/js/scripts/components.js"></script>
-    <script src="../../../app-assets/js/scripts/footer.js"></script>
-    
-    <!-- END: Theme JS-->
-    <!-- RMIS Continuing Script  -->
-    <script src="../../../assets/1.0.1/js/core.js?v=<?php echo filemtime('../../../assets/1.0.1/js/core.js'); ?>"></script>
-    <script src="../../../assets/1.0.1/js/user.js?v=<?php echo filemtime('../../../assets/1.0.1/js/user.js'); ?>"></script>
-    <script src="../../../assets/1.0.1/js/project.js?v=<?php echo filemtime('../../../assets/1.0.1/js/project.js'); ?>"></script>
-    <script src="../../../assets/1.0.1/js/continuing.js?v=<?php echo filemtime('../../../assets/1.0.1/js/continuing.js'); ?>"></script>
-    <!-- BEGIN: Page JS-->
-    <!-- END: Page JS-->
+        // console.log('asd' + current_user);
+        
+        if (window.location.protocol !== 'http:') {
+            // window.location = 'http://rmis2.medicine.psu.ac.th/rmis/pm/index?uid=' + current_user + '&role=pm';
+            // location.href = location.href.replace(/^https:/, 'http:')
+        }
 
-    <script>
-        $(document).ready(function(){
-            project.getList()
-            progress.getProgressReportList('Progress')
-            progress.getProgressReportList('Amendment')
-            progress.getProgressReportList('Deviation')
-            progress.getProgressReportList('LocalSAE')
-            progress.getProgressReportList('ExtSAE')
-            progress.getProgressReportList('Closing')
-            progress.getProgressReportList('Terminate') 
-        })
-    </script>
+        $('#modalNotify').modal()
+
+        window.localStorage.removeItem(conf.prefix + 'project')
+        setTimeout(() => {
+          preload.hide()
+          project.list_unsend_project()
+        }, 1000);
+      })
+  </script>
 
 </body>
-<!-- END: Body-->
-
 </html>
+
+<!-- Modal -->
+<div class="modal fade" id="modalNotify" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content" style="border-radius: 0px;">
+      <div class="modal-body">
+        <div class="text-center pt-4 pb-4">
+          <i class="fas fa-exclamation-circle text-warning" style="font-size: 5em;"></i>
+        </div>
+        <h4 class="text-center text-dark">สำคัญ</h4>
+        <p>
+          <div class="text-center">
+            สำนักงานจะสื่อสารทางอีเมล์ที่ท่านให้ไว้ <span class="text-danger">บางครั้งอาจอยู่ใน Junk box</span> ขอให้ตรวจสอบ Junk box ของท่าน หรือเข้าไปในระบบ RMIS เป็นระยะเพื่อตรวจสอบสถานะ
+          </div>
+          <div class="text-center pt-3">
+            <div class="pt-3">
+              <button type="button" class="btn btn-danger bsdn btn-lg" data-dismiss="modal" style="font-size: 1em;">รับทราบ</button>
+            </div>
+          </div>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="submitNewInitial" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-primary pb-4">
+        <h5 class="modal-title text-white" id="exampleModalLabel">ข้อตกลงและเงื่อนไข</h5>
+        <button type="button" class="close text-white btnCloseModal" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>
+          <ol>
+            <li>การลงทะเบียนส่วนนี้ หมายถึง <span class="text-danger" style="font-size: 1.4em;">การลงทะเบียนงานวิจัยที่ยังไม่ผ่านการรับรอง</span> </li>
+            <li>หากลงทะเบียนโครงการค้างอยู่ ให้ปิดกล่องข้อความนี้และเลือกปุ่ม "แบบเสนอโครงการฉบับร่าง"</li>
+            <li>ผู้ลงข้อมูล<span class="text-danger" style="font-size: 1.4em;">ต้องเป็นหัวหน้าโครงการเท่านั้น</span> (ถ้ามีผู้ลงข้อมูลแทน ต้องใช้ username และ password ของหัวหน้าโครงการเท่านั้น)</li>
+          </ol>
+          <div class="text-center pt-3">
+            ตอบ "ตกลง" เพื่อยอมรับเงื่อนไขและทำการลงทะเบียนงานวิจัยใหม่
+            <div class="pt-4">
+              <button type="button" class="btn btn-primary bsdn btn-lg" style="font-size: 1em;" onclick="window.location='research_register?uid=<?php echo $uid;?>&role=<?php echo $role;?>'">ตกลง</button>
+            </div>
+          </div>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
